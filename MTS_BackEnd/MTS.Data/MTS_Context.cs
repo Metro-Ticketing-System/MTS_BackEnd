@@ -40,6 +40,14 @@ namespace MTS.Data
 				.HasForeignKey(u => u.RoleId)
 				.OnDelete(DeleteBehavior.Cascade);
 
+			modelBuilder.Entity<User>()
+				.HasIndex(u => u.UserName)
+				.IsUnique();
+
+			modelBuilder.Entity<User>()
+				.HasIndex(u => u.Email)
+				.IsUnique();
+
 			#region Seed Data
 			// Role
 			var roleAdmin = new Role
@@ -73,7 +81,7 @@ namespace MTS.Data
 				NormalizedUserName = "CHAULB",
 				Email = "Chaulbse182712@fpt.edu.vn",
 				NormalizedEmail = "CHAULBSE182712@FPT.EDU.VN",
-				//EmailConfirmed = true,
+				EmailConfirmed = true,
 				FirstName = "Chau",
 				LastName = "Le Bao",
 				DateOfBirth = DateOnly.Parse("2004-11-17"),
@@ -92,7 +100,7 @@ namespace MTS.Data
 				NormalizedUserName = "ANNTP",
 				Email = "Anntpse182743@fpt.edu.vn",
 				NormalizedEmail = "ANNTPSE182743@FPT.EDU.VN",
-				//EmailConfirmed = true,
+				EmailConfirmed = true,
 				FirstName = "An",
 				LastName = "Nguyen Tran",
 				DateOfBirth = DateOnly.Parse("2004-11-19"),
@@ -111,7 +119,7 @@ namespace MTS.Data
 				NormalizedUserName = "THAONN",
 				Email = "Thaonnse182709@fpt.edu.vn",
 				NormalizedEmail = "THAONNSE182709@FPT.EDU.VN",
-				//EmailConfirmed = true,
+				EmailConfirmed = true,
 				FirstName = "Thao",
 				LastName = "Nguyen Ngoc",
 				DateOfBirth = DateOnly.Parse("2004-12-23"),
@@ -130,7 +138,7 @@ namespace MTS.Data
 				NormalizedUserName = "MAINT",
 				Email = "Maintse184085@fpt.edu.vn",
 				NormalizedEmail = "MAINTSE184085@FPT.EDU.VN",
-				//EmailConfirmed = true,
+				EmailConfirmed = true,
 				FirstName = "Mai",
 				LastName = "Nguyen Thanh",
 				DateOfBirth = DateOnly.Parse("2004-08-28"),
@@ -149,7 +157,7 @@ namespace MTS.Data
 				NormalizedUserName = "ANHTD",
 				Email = "Anhtdse184525@fpt.edu.vn",
 				NormalizedEmail = "ANHTDSE184525@FPT.EDU.VN",
-				//EmailConfirmed = true,
+				EmailConfirmed = true,
 				FirstName = "Anh",
 				LastName = "Ta Duy",
 				DateOfBirth = DateOnly.Parse("2004-08-06"),

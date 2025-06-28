@@ -7,6 +7,7 @@ namespace MTS.DAL.Repositories
 		IGenericRepository<T> GetRepository<T>() where T : class;
 		int SaveChangesWithTransaction();
 		Task<int> SaveChangesWithTransactionAsync();
+		Task<int> SaveAsync();
 
 	}
 	public class UnitOfWork : IUnitOfWork
@@ -43,10 +44,10 @@ namespace MTS.DAL.Repositories
 			return result;
 		}
 
-		//public async Task SaveAsync()
-		//{
-		//	await _context.SaveChangesAsync();
-		//}
+		public async Task<int> SaveAsync()
+		{
+			return await _context.SaveChangesAsync();
+		}
 
 		public async Task<int> SaveChangesWithTransactionAsync()
 		{
