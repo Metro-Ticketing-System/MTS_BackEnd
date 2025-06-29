@@ -14,6 +14,8 @@ namespace MTS.Data.Models
 		public bool EmailConfirmed { get; set; }
 		public string? EmailVerificationToken { get; set; } = string.Empty;
 		public DateTime? EmailVerificationTokenExpiry { get; set; }
+		public string? PasswordResetToken { get;set; } = string.Empty;
+		public DateTime? PasswordResetTokenExpiry { get; set; }
 		public string FirstName { get; set; } = string.Empty;
 		public string LastName { get; set; } = string.Empty;
 		public DateOnly DateOfBirth { get; set; }
@@ -21,6 +23,7 @@ namespace MTS.Data.Models
 		public DateTime CreatedAt { get; set; }
 		public DateTime? DeletedAt { get; set; } = null;
 		public bool IsStudent { get; set; } = false;
+		public bool IsRevolutionaryContributor { get; set; } = false;
 		public int RoleId { get; set; }
 		public virtual Role Role { get; set; } = null!;
 	}
