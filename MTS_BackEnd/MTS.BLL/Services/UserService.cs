@@ -141,7 +141,6 @@ namespace MTS.BLL.Services
 				var result = await _unitOfWork.SaveAsync();
 				if (result > 0)
 				{
-					await _unitOfWork.SaveAsync();
 					return true;
 				}
 				return false;

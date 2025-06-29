@@ -37,7 +37,7 @@ namespace MTS.BackEnd.Controllers
 			return Ok("Registration successful. Please check your email to verify your account.");
 		}
 
-		[HttpGet("VerifyEmail")]
+		[HttpPost("VerifyEmail")]
 		public async Task<IActionResult> VerifyEmail([FromQuery] string email, [FromQuery] string token)
 		{
 			var result = await _serviceProviders.UserService.VerifyEmail(email, token);
