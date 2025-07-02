@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
 using MTS.DAL.Dtos;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTS.BackEnd.Controllers
 {
@@ -36,7 +38,7 @@ namespace MTS.BackEnd.Controllers
 			return Ok("Registration successful. Please check your email to verify your account.");
 		}
 
-		[HttpGet("VerifyEmail")]
+		[HttpPost("VerifyEmail")]
 		public async Task<IActionResult> VerifyEmail([FromQuery] string email, [FromQuery] string token)
 		{
 			var result = await _serviceProviders.UserService.VerifyEmail(email, token);
@@ -54,6 +56,43 @@ namespace MTS.BackEnd.Controllers
 				return Unauthorized("Invalid login information!");
 
 			return Ok(loginResponse);
+		}
+
+		[HttpPost("ForgotPassword")]
+		public async Task<IActionResult> ForgotPassword([FromQuery][Required] string email)
+		{
+			if (string.IsNullOrEmpty(email)) return BadRequest("Email must not be empty!");
+			var result = await _serviceProviders.UserService.RequestPasswordReset(email);
+			if (!result.IsSucceed) return NotFound("Email is not registered!");
+
+			var resetLink = $"https://HCMCMTS.com/user/reset-password?token={result.PasswordResetToken}&email={Uri.EscapeDataString(email)}";
+			await Task.Run(async () =>
+			{
+				await _emailSender.SendEmailAsync(email, "Password Reset Request",
+					$"Please click to reset your password: <a href='{resetLink}'>Reset Password</a>");
+			});
+			return Ok("Password reset link has been sent to your email.");
+		}
+
+		[HttpPost("ResetPassword")]
+		public async Task<IActionResult> ResetPassword([FromQuery][Required] string token, [FromBody] PasswordResetRequestDto dto)
+		{
+			if (string.IsNullOrEmpty(token)) return BadRequest("Token is required!");
+			if (string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.ConfirmPassword)) return BadRequest("Password & cofirmPassword is required!");
+			if (!dto.Password.Equals(dto.ConfirmPassword)) return BadRequest("Password do not match!");
+			var result = await _serviceProviders.UserService.ResetPassword(token, dto.Password);
+			if (!result) return BadRequest("Failed to reset password!");
+			return Ok("Password has been reset successfully! You can now log in with your new password.");
+		}
+
+		[Authorize(Roles = "1")]
+		[HttpPost("CreateStaffAccount")]
+		public async Task<IActionResult> CreateStaffAccount([FromBody] StaffAccountDto staffAccountDto)
+		{
+			if (staffAccountDto == null) return BadRequest("Staff account data is required!");
+			var result = await _serviceProviders.UserService.CreateStaffAccount(staffAccountDto);
+			if (result < 0) return Conflict("User already exists!");
+			return Ok("Staff account created successfully!");
 		}
 	}
 }
