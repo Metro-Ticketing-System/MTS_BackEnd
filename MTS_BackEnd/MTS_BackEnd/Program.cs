@@ -5,6 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MTS.BackEnd.Infrastructure;
 using MTS.BLL;
+using MTS.BLL.Services;
+using MTS.BLL.Services.QRService;
 using MTS.DAL.Repositories;
 using MTS.Data;
 using MTS.Data.Base;
@@ -96,6 +98,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGenericRepository<User>, GenericRepository<User>>();
 builder.Services.AddScoped<IServiceProviders, ServiceProviders>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<QRTokenGeneratorService>();
+
 
 var app = builder.Build();
 

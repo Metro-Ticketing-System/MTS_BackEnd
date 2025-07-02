@@ -23,5 +23,8 @@ namespace MTS.Data.Models
 		public bool IsStudent { get; set; } = false;
 		public int RoleId { get; set; }
 		public virtual Role Role { get; set; } = null!;
-	}
+
+        // Navigation property
+        public ICollection<Ticket> Tickets { get; set; }
+    }
 }
