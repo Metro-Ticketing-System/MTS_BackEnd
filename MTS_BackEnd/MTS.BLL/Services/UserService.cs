@@ -14,6 +14,7 @@ namespace MTS.BLL.Services
 		Task<bool> VerifyEmail(string email, string token);
 		Task<PasswordResetRequestResultDto> RequestPasswordReset(string email);
 		Task<bool> ResetPassword(string token, string newPassword);
+		Task<int> CreateStaffAccount(StaffAccountDto staffAccountDto);
 	}
 	public class UserService : IUserService
 	{
@@ -33,11 +34,45 @@ namespace MTS.BLL.Services
 			_userRepo = _unitOfWork.GetRepository<User>();
 		}
 
+		public async Task<int> CreateStaffAccount(StaffAccountDto staffAccountDto)
+		{
+			try
+			{
+				var existingUser = await _userRepo.GetByPropertyAsync(u => u.UserName == staffAccountDto.UserName || u.Email == staffAccountDto.Email);
+				if (existingUser != null) return -1;
+				
+				var newAccount = new User
+				{
+					UserName = staffAccountDto.UserName,
+					FirstName = staffAccountDto.FirstName,
+					LastName = staffAccountDto.LastName,
+					NormalizedUserName = staffAccountDto.UserName.ToUpperInvariant(),
+					Email = staffAccountDto.Email,
+					NormalizedEmail = staffAccountDto.Email.ToUpperInvariant(),
+					PasswordHash = _passwordHasher.HashPassword(new User(), staffAccountDto.Password),
+					RoleId = 2,
+					IsActive = true,
+					EmailConfirmed = true,
+					CreatedAt = DateTime.Now
+				};
+
+				await _userRepo.AddAsync(newAccount);
+				var result = await _unitOfWork.SaveAsync();
+				if (result > 0) return 1;
+				return -1;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error creating staff account: {ex.Message}");
+				return -1;
+			}
+		}
+
 		public async Task<LoginResponseModelDto?> Login(LoginRequestModelDto loginRequest)
 		{
 			try
 			{
-				var account = await _userRepo.GetByPropertyAsync(u => u.UserName == loginRequest.UserName && u.IsActive && u.EmailConfirmed);
+				var account = await _userRepo.GetByPropertyAsync(u => u.UserName == loginRequest.UserName && u.IsActive);
 				var checkPassword = VerifyPassword(account, loginRequest.Password);
 				if (account == null || !checkPassword) return null;
 				LoginResponseModelDto token = await Authentication.CreateToken(account!, account.RoleId!, _jwtSettings);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.UI.Services;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
 using MTS.DAL.Dtos;
@@ -82,6 +83,16 @@ namespace MTS.BackEnd.Controllers
 			var result = await _serviceProviders.UserService.ResetPassword(token, dto.Password);
 			if (!result) return BadRequest("Failed to reset password!");
 			return Ok("Password has been reset successfully! You can now log in with your new password.");
+		}
+
+		[Authorize(Roles = "1")]
+		[HttpPost("CreateStaffAccount")]
+		public async Task<IActionResult> CreateStaffAccount([FromBody] StaffAccountDto staffAccountDto)
+		{
+			if (staffAccountDto == null) return BadRequest("Staff account data is required!");
+			var result = await _serviceProviders.UserService.CreateStaffAccount(staffAccountDto);
+			if (result < 0) return Conflict("User already exists!");
+			return Ok("Staff account created successfully!");
 		}
 	}
 }
