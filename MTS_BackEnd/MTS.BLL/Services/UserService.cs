@@ -15,6 +15,7 @@ namespace MTS.BLL.Services
 		Task<PasswordResetRequestResultDto> RequestPasswordReset(string email);
 		Task<bool> ResetPassword(string token, string newPassword);
 		Task<int> CreateStaffAccount(StaffAccountDto staffAccountDto);
+		Task<UserProfileDto?> GetUserProfile(Guid userId);
 	}
 	public class UserService : IUserService
 	{
@@ -40,7 +41,7 @@ namespace MTS.BLL.Services
 			{
 				var existingUser = await _userRepo.GetByPropertyAsync(u => u.UserName == staffAccountDto.UserName || u.Email == staffAccountDto.Email);
 				if (existingUser != null) return -1;
-				
+
 				var newAccount = new User
 				{
 					UserName = staffAccountDto.UserName,
@@ -65,6 +66,30 @@ namespace MTS.BLL.Services
 			{
 				Console.WriteLine($"Error creating staff account: {ex.Message}");
 				return -1;
+			}
+		}
+
+		public async Task<UserProfileDto?> GetUserProfile(Guid userId)
+		{
+			try
+			{
+				var account = await _userRepo.GetByPropertyAsync(u => u.Id == userId && u.IsActive == true);
+				if (account == null) return null;
+				return new UserProfileDto
+				{
+					UserName = account.UserName,
+					FirstName = account.FirstName,
+					LastName = account.LastName,
+					Email = account.Email,
+					DateOfBirth = account.DateOfBirth,
+					IsStudent = account.IsStudent,
+					IsRevolutionaryContributor = account.IsRevolutionaryContributor
+				};
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error retrieving user profile: {ex.Message}");
+				return null;
 			}
 		}
 
