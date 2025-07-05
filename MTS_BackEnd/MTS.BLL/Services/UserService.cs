@@ -18,6 +18,7 @@ namespace MTS.BLL.Services
 		Task<UserProfileDto?> GetUserProfile(Guid userId);
 		Task<bool> UpdateProfile(UserProfileDto userProfileDto);
 		Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result);
+		Task<List<UserAccountDto>> GetAllUsers();
 
 		public class UserService : IUserService
 		{
@@ -296,6 +297,21 @@ namespace MTS.BLL.Services
 			private bool VerifyPassword(User user, string password)
 			{
 				return _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) == PasswordVerificationResult.Success;
+			}
+
+			public async Task<List<UserAccountDto>> GetAllUsers()
+			{
+				try
+				{
+					var users = await _userRepo.GetAllByPropertyAsync();
+					if (users == null || !users.Any()) return new List<UserAccountDto>();
+					return users.Select(UserAccountDto.FromModelToDto).ToList();
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error retrieving all users: {ex.Message}");
+					return new List<UserAccountDto>();
+				}
 			}
 		}
 	}

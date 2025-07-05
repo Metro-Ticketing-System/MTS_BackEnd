@@ -172,5 +172,18 @@ namespace MTS.BackEnd.Controllers
 			if (!isSuccess) return NotFound("User not found or update failed!");
 			return NoContent();
 		}
+
+		[Authorize(Roles = "1")]
+		[HttpGet("GetAllUserAccounts")]
+		public async Task<IActionResult> GetAllUserAccounts()
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			var userAccounts = await _serviceProviders.UserService.GetAllUsers();
+			if (userAccounts == null || !userAccounts.Any()) return NotFound("No user accounts found!");
+			return Ok(userAccounts);
+		}
 	}
 }
