@@ -17,6 +17,7 @@ namespace MTS.BLL.Services
 		Task<int> CreateStaffAccount(StaffAccountDto staffAccountDto);
 		Task<UserProfileDto?> GetUserProfile(Guid userId);
 		Task<bool> UpdateProfile(UserProfileDto userProfileDto);
+		Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result);
 
 		public class UserService : IUserService
 		{
@@ -92,6 +93,34 @@ namespace MTS.BLL.Services
 				{
 					Console.WriteLine($"Error retrieving user profile: {ex.Message}");
 					return null;
+				}
+			}
+
+			public async Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result)
+			{
+				try
+				{
+					var account = await _userRepo.GetByPropertyAsync(u => u.Id == userId);
+					if (account == null) return false;
+					account.IsActive = result;
+					if (result == false)
+					{
+						account.DeletedAt = DateTime.Now;
+					}
+					account.DeletedAt = null; // Reset DeletedAt if activating the account
+					account.UpdatedAt = DateTime.Now;
+					await _userRepo.UpdateAsync(account);
+					var finalResult = await _unitOfWork.SaveAsync();
+					if (finalResult > 0)
+					{
+						return true;
+					}
+					return false;
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error inactivating account: {ex.Message}");
+					return false;
 				}
 			}
 
@@ -223,6 +252,7 @@ namespace MTS.BLL.Services
 					user.FirstName = userProfileDto.FirstName;
 					user.LastName = userProfileDto.LastName;
 					user.DateOfBirth = userProfileDto.DateOfBirth;
+					user.UpdatedAt = DateTime.Now;
 					await _userRepo.UpdateAsync(user);
 					var result = await _unitOfWork.SaveAsync();
 					if (result > 0)
