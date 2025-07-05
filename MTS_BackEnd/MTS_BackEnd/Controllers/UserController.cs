@@ -141,5 +141,22 @@ namespace MTS.BackEnd.Controllers
 			if (userProfile == null) return NotFound("User profile not found!");
 			return Ok(userProfile);
 		}
+
+		[Authorize]
+		[HttpPut("UpdateProfile")]
+		public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto userProfileDto)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			if (userProfileDto == null) return BadRequest("User profile data is required!");
+			var userId = User.FindFirstValue("id");
+			if (string.IsNullOrEmpty(userId)) return Unauthorized("User not authenticated!");
+			userProfileDto.Id = Guid.Parse(userId);
+			var result = await _serviceProviders.UserService.UpdateProfile(userProfileDto);
+			if (!result) return BadRequest("Failed to update profile!");
+			return NoContent();
+		}
 	}
 }
