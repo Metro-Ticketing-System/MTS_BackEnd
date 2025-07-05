@@ -21,6 +21,7 @@ namespace MTS.Data.Models
 		public DateOnly DateOfBirth { get; set; }
 		public bool IsActive { get; set; } = true;
 		public DateTime CreatedAt { get; set; }
+		public DateTime? UpdatedAt { get; set; }
 		public DateTime? DeletedAt { get; set; } = null;
 		public bool IsStudent { get; set; } = false;
 		public bool IsRevolutionaryContributor { get; set; } = false;

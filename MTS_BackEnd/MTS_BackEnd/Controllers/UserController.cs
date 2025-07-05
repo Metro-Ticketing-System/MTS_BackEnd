@@ -158,5 +158,19 @@ namespace MTS.BackEnd.Controllers
 			if (!result) return BadRequest("Failed to update profile!");
 			return NoContent();
 		}
+
+		[Authorize(Roles = "1")]
+		[HttpPatch("SetUserAccountIsActiveStatus")]
+		public async Task<IActionResult> SetUserAccountIsActiveStatus([FromQuery] Guid userId, [FromQuery] bool result)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+			if (userId == Guid.Empty) return BadRequest("User ID is required!");
+			var isSuccess = await _serviceProviders.UserService.SetUserAccountIsActiveStatus(userId, result);
+			if (!isSuccess) return NotFound("User not found or update failed!");
+			return NoContent();
+		}
 	}
 }
