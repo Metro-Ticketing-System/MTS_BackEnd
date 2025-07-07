@@ -19,7 +19,6 @@ namespace MTS.BLL.Services
 		Task<bool> UpdateProfile(UserProfileDto userProfileDto);
 		Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result);
 		Task<List<UserAccountDto>> GetAllUsers();
-
 		public class UserService : IUserService
 		{
 			private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();

@@ -21,6 +21,7 @@ namespace MTS.DAL.Libraries
 					new Claim("id", user!.Id.ToString()),
 					new Claim("role", role.ToString()),
 					new Claim("email",user.Email),
+					new Claim("name",user.UserName),
 				};
 
 			// đăng kí khóa bảo mật

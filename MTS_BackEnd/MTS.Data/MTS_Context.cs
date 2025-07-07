@@ -15,6 +15,7 @@ namespace MTS.Data
 
 		public virtual DbSet<User> Users { get; set; }
 		public virtual DbSet<Role> Roles { get; set; }
+		public virtual DbSet<PriorityApplication> PriorityApplications { get; set; }
 
 		public static string GetConnectionString(string connectionStringName)
 		{
@@ -35,6 +36,7 @@ namespace MTS.Data
 		{
 			base.OnModelCreating(modelBuilder);
 
+			// User
 			modelBuilder.Entity<User>()
 				.HasOne(u => u.Role)
 				.WithMany(r => r.Users)
@@ -48,6 +50,21 @@ namespace MTS.Data
 			modelBuilder.Entity<User>()
 				.HasIndex(u => u.Email)
 				.IsUnique();
+
+			// 1-1: Passenger
+			modelBuilder.Entity<User>()
+				.HasOne(u => u.PriorityApplication)
+				.WithOne(p => p.Passenger)
+				.HasForeignKey<PriorityApplication>(p => p.PassengerId)
+				.IsRequired()
+				.OnDelete(DeleteBehavior.Cascade);
+
+			// 1-n: Manager
+			modelBuilder.Entity<PriorityApplication>()
+				.HasOne(p => p.Admin)
+				.WithMany(m => m.ApprovedApplications)
+				.HasForeignKey(p => p.AdminId)
+				.OnDelete(DeleteBehavior.Restrict);
 
 			// TicketType
 			modelBuilder.Entity<TicketType>(entity =>
@@ -260,35 +277,35 @@ namespace MTS.Data
 
 			modelBuilder.Entity<TicketType>().HasData(ticketType1, ticketType2, ticketType3);
 
-            #endregion
+			#endregion
 
-            #region Terminal
-            var terminal1 = new Terminal
-            {
-                Id = 1,
-                Name = "Hà Nội Station",
-                Location = "Hà Nội"
-            };
+			#region Terminal
+			var terminal1 = new Terminal
+			{
+				Id = 1,
+				Name = "Hà Nội Station",
+				Location = "Hà Nội"
+			};
 
-            var terminal2 = new Terminal
-            {
-                Id = 2,
-                Name = "Đà Nẵng Station",
-                Location = "Đà Nẵng"
-            };
+			var terminal2 = new Terminal
+			{
+				Id = 2,
+				Name = "Đà Nẵng Station",
+				Location = "Đà Nẵng"
+			};
 
-            var terminal3 = new Terminal
-            {
-                Id = 3,
-                Name = "TP.HCM Station",
-                Location = "TP.HCM"
-            };
+			var terminal3 = new Terminal
+			{
+				Id = 3,
+				Name = "TP.HCM Station",
+				Location = "TP.HCM"
+			};
 
-            modelBuilder.Entity<Terminal>().HasData(terminal1, terminal2, terminal3);
-            #endregion
+			modelBuilder.Entity<Terminal>().HasData(terminal1, terminal2, terminal3);
+			#endregion
 
-            #region TrainRoute
-            var trainRoute1 = new TrainRoute
+			#region TrainRoute
+			var trainRoute1 = new TrainRoute
 			{
 				Id = 1,
 				Price = 350000m,
@@ -364,10 +381,10 @@ namespace MTS.Data
 
 			modelBuilder.Entity<Ticket>().HasData(ticket1, ticket2, ticket3);
 
-            #endregion
+			#endregion
 
-            #endregion
-        }
-        #endregion
-    }
+			#endregion
+		}
+		#endregion
+	}
 }
