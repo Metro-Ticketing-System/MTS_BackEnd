@@ -51,18 +51,17 @@ namespace MTS.Data
 				.HasIndex(u => u.Email)
 				.IsUnique();
 
-			// 1-1: Passenger
-			modelBuilder.Entity<User>()
-				.HasOne(u => u.PriorityApplication)
-				.WithOne(p => p.Passenger)
-				.HasForeignKey<PriorityApplication>(p => p.PassengerId)
-				.IsRequired()
+			// 1-n: Passenger
+			modelBuilder.Entity<PriorityApplication>()
+				.HasOne(p => p.Passenger)
+				.WithMany(u => u.PriorityApplications)
+				.HasForeignKey(p => p.PassengerId)
 				.OnDelete(DeleteBehavior.Cascade);
 
 			// 1-n: Manager
 			modelBuilder.Entity<PriorityApplication>()
 				.HasOne(p => p.Admin)
-				.WithMany(m => m.ApprovedApplications)
+				.WithMany(m => m.ModeratedApplications)
 				.HasForeignKey(p => p.AdminId)
 				.OnDelete(DeleteBehavior.Restrict);
 

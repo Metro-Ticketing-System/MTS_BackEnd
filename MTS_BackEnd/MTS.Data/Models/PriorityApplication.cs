@@ -12,7 +12,7 @@ namespace MTS.Data.Models
 		public string? StudentCardImageUrl { get; set; }
 		public string? RevolutionaryContributorImageUrl { get; set; }
 		public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
-		public DateTime? ApprovedAt { get; set; } 
+		public string? Note { get; set; }
 		public Guid PassengerId { get; set; }
 		[ForeignKey(nameof(PassengerId))]
 		public User Passenger { get; set; } = null!;

@@ -1,14 +1,16 @@
 ﻿using Microsoft.AspNetCore.Http;
 using MTS.DAL.Dtos;
 using MTS.DAL.Repositories;
+using MTS.Data.Enums;
 using MTS.Data.Models;
 
 namespace MTS.BLL.Services
 {
 	public interface IPriorityApplicationService
 	{
-		public Task<bool> CreateAsync(CreatePriorityApplicationDto dto, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImag);
+		public Task<bool> CreateAsync(Guid passengerId, PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImag);
 		public Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsAsync();
+		public Task<bool> UpdatePriorityApplicationStatusAsync(int applicationId, ApplicationStatus status, string? note, Guid adminId);
 	}
 	public class PriorityApplicationService : IPriorityApplicationService
 	{
@@ -24,21 +26,23 @@ namespace MTS.BLL.Services
 			_supabaseFileService = supabaseFileService;
 		}
 
-		public async Task<bool> CreateAsync(CreatePriorityApplicationDto dto, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImage)
+		public async Task<bool> CreateAsync(Guid passengerId, PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImage)
 		{
 			try
 			{
-				var user = await _unitOfWork.GetRepository<User>().GetByPropertyAsync(u => u.Id == dto.PassengerId && u.IsActive == true);
+				var user = await _unitOfWork.GetRepository<User>().GetByPropertyAsync(u => u.Id == passengerId && u.IsActive == true);
 				if (user == null)
 				{
 					Console.WriteLine("User not found or inactive!");
 					return false;
 				}
 
-				var application = await _unitOfWork.GetRepository<PriorityApplication>().GetByPropertyAsync(a => a.PassengerId == dto.PassengerId);
-				if (application != null)
+				var existingApplication = await _unitOfWork.GetRepository<PriorityApplication>().GetByPropertyAsync(a => a.PassengerId == passengerId &&
+				(a.Status == ApplicationStatus.Pending
+				|| a.Status == ApplicationStatus.Approved));
+				if (existingApplication != null)
 				{
-					Console.WriteLine("Priority application already exists for this passenger!");
+					Console.WriteLine("Passenger already has an approved/pending application and cannot submit another.");
 					return false;
 				}
 
@@ -48,30 +52,30 @@ namespace MTS.BLL.Services
 				string revolutionaryContributorImageUrl = string.Empty;
 				if (frontIdCardImage != null && frontIdCardImage.Length > 0)
 				{
-					frontIdCardImageUrl = await _supabaseFileService.UploadFileAsync(frontIdCardImage, "priority-documents", dto.PassengerId.ToString());
+					frontIdCardImageUrl = await _supabaseFileService.UploadFileAsync(frontIdCardImage, "priority-documents", passengerId.ToString());
 				}
 
 				if (backIdCardImage != null && backIdCardImage.Length > 0)
 				{
-					backIdCardImageUrl = await _supabaseFileService.UploadFileAsync(backIdCardImage, "priority-documents", dto.PassengerId.ToString());
+					backIdCardImageUrl = await _supabaseFileService.UploadFileAsync(backIdCardImage, "priority-documents", passengerId.ToString());
 				}
 
 				if (studentCardImage != null && studentCardImage.Length > 0)
 				{
-					studentCardImageUrl = await _supabaseFileService.UploadFileAsync(studentCardImage, "priority-documents", dto.PassengerId.ToString());
+					studentCardImageUrl = await _supabaseFileService.UploadFileAsync(studentCardImage, "priority-documents", passengerId.ToString());
 				}
 
 				if (revolutionaryContributorImage != null && revolutionaryContributorImage.Length > 0)
 				{
-					revolutionaryContributorImageUrl = await _supabaseFileService.UploadFileAsync(revolutionaryContributorImage, "priority-documents", dto.PassengerId.ToString());
+					revolutionaryContributorImageUrl = await _supabaseFileService.UploadFileAsync(revolutionaryContributorImage, "priority-documents", passengerId.ToString());
 				}
 
 				var priorityApplication = new PriorityApplication
 				{
-					PassengerId = dto.PassengerId,
+					PassengerId = passengerId,
 					CreatedBy = user.UserName,
 					CreatedTime = DateTime.Now,
-					Type = dto.Type,
+					Type = type,
 					FrontIdCardImageUrl = frontIdCardImageUrl,
 					BackIdCardImageUrl = backIdCardImageUrl,
 					StudentCardImageUrl = studentCardImageUrl,
@@ -117,9 +121,9 @@ namespace MTS.BLL.Services
 					Status = app.Status,
 					PassengerName = app.Passenger.LastName + " " + app.Passenger.FirstName,
 					AdminName = app.Admin?.LastName + " " + app.Admin?.FirstName,
-					ApprovedAt = app.ApprovedAt,
 					UpdatedBy = app.UpdatedBy,
-					LastUpdatedTime = app.LastUpdatedTime
+					LastUpdatedTime = app.LastUpdatedTime,
+					Note = app.Note
 
 				}).ToList();
 
@@ -129,6 +133,46 @@ namespace MTS.BLL.Services
 			{
 				Console.WriteLine($"Error retrieving priority applications: {ex.Message}");
 				return new List<PriorityApplicationDto>();
+			}
+		}
+
+		public async Task<bool> UpdatePriorityApplicationStatusAsync(int applicationId, ApplicationStatus status, string? note, Guid adminId)
+		{
+			try
+			{
+				var application = await _unitOfWork.GetRepository<PriorityApplication>().GetByPropertyAsync(x => x.Id == applicationId);
+				if (application == null)
+				{
+					Console.WriteLine("Priority application not found.");
+					return false;
+				}
+
+				var admin = await _unitOfWork.GetRepository<User>().GetByPropertyAsync(u => u.Id == adminId && u.IsActive == true);
+				if (admin == null)
+				{
+					Console.WriteLine("Admin not found or inactive.");
+					return false;
+				}
+
+				application.Status = status;
+				application.Note = note;
+				application.AdminId = adminId;
+				application.UpdatedBy = admin.UserName;
+				application.LastUpdatedTime = DateTime.Now;
+
+				await _unitOfWork.GetRepository<PriorityApplication>().UpdateAsync(application);
+				var result = await _unitOfWork.SaveAsync();
+				if (result > 0)
+				{
+					Console.WriteLine("Priority application status updated successfully!");
+					return true;
+				}
+				return false;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error updating priority application status: {ex.Message}");
+				return false;
 			}
 		}
 	}

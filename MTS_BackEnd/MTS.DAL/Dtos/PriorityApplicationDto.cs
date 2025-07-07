@@ -11,12 +11,12 @@ namespace MTS.DAL.Dtos
 		public string? StudentCardImageUrl { get; set; }
 		public string? RevolutionaryContributorImageUrl { get; set; }
 		public ApplicationStatus Status { get; set; } = ApplicationStatus.Pending;
-		public DateTime? ApprovedAt { get; set; }
 		public string PassengerName { get; set; } = string.Empty;
 		public string? AdminName { get; set; }
 		public DateTime CreatedTime { get; set; }
 		public DateTime? LastUpdatedTime { get; set; }
 		public string? CreatedBy { get; set; }
 		public string? UpdatedBy { get; set; }
+		public string? Note { get; set; }
 	}
 }
