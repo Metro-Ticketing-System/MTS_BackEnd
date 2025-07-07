@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
-using MTS.DAL.Dtos;
 using MTS.Data.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -20,7 +19,7 @@ namespace MTS.BackEnd.Controllers
 
 		[Authorize(Roles = "3")]
 		[HttpPost("Create")]
-		public async Task<IActionResult> CreateAsync([FromForm] PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImage)
+		public async Task<IActionResult> Create([FromForm] PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImage)
 		{
 			if (!ModelState.IsValid)
 			{
@@ -53,8 +52,8 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpGet("GetAllPriorityApplication")]
-		public async Task<IActionResult> GetAllAsync()
+		[HttpGet("GetAll")]
+		public async Task<IActionResult> GetAll()
 		{
 			var applications = await _serviceProviders.PriorityApplicationService.GetAllPriorityApplicationsAsync();
 			if (applications == null || !applications.Any())
@@ -66,7 +65,7 @@ namespace MTS.BackEnd.Controllers
 
 
 		[Authorize(Roles = "1")]
-		[HttpGet("SetStatus")]
+		[HttpPatch("SetStatus")]
 		public async Task<IActionResult> SetStatus([FromQuery][Required] int applicationId, [Required]ApplicationStatus applicationStatus, string? note)
 		{
 			var adminId = User.FindFirstValue("id");
@@ -78,6 +77,18 @@ namespace MTS.BackEnd.Controllers
 				return NotFound("No priority applications found.");
 			}
 			return NoContent();
+		}
+
+		[Authorize(Roles = "1")]
+		[HttpGet("Detail/{applicationId}")]
+		public async Task<IActionResult> Get([FromRoute][Required] int applicationId)
+		{
+			var application = await _serviceProviders.PriorityApplicationService.GetPriorityApplicationAsync(applicationId);
+			if (application == null)
+			{
+				return NotFound("No priority applications found.");
+			}
+			return Ok(application);
 		}
 	}
 }
