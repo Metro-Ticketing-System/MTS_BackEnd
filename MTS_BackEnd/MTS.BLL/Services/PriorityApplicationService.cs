@@ -11,6 +11,7 @@ namespace MTS.BLL.Services
 		public Task<bool> CreateAsync(Guid passengerId, PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImag);
 		public Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsAsync();
 		public Task<bool> UpdatePriorityApplicationStatusAsync(int applicationId, ApplicationStatus status, string? note, Guid adminId);
+		public Task<PriorityApplicationDto?> GetPriorityApplicationAsync(int applicationId);
 	}
 	public class PriorityApplicationService : IPriorityApplicationService
 	{
@@ -133,6 +134,44 @@ namespace MTS.BLL.Services
 			{
 				Console.WriteLine($"Error retrieving priority applications: {ex.Message}");
 				return new List<PriorityApplicationDto>();
+			}
+		}
+
+		public async Task<PriorityApplicationDto?> GetPriorityApplicationAsync(int applicationId)
+		{
+			try
+			{
+				var application = await _unitOfWork.GetRepository<PriorityApplication>().GetByPropertyAsync(x => x.Id == applicationId, includeProperties: "Passenger, Admin"); 
+				if (application == null)
+				{
+					Console.WriteLine("Priority application not found.");
+					return null;
+				}
+				
+				var applicationDto = new PriorityApplicationDto
+				{
+					Id = application.Id,
+					CreatedBy = application.CreatedBy,
+					CreatedTime = application.CreatedTime,
+					Type = application.Type,
+					FrontIdCardImageUrl = application.FrontIdCardImageUrl,
+					BackIdCardImageUrl = application.BackIdCardImageUrl,
+					StudentCardImageUrl = application.StudentCardImageUrl,
+					RevolutionaryContributorImageUrl = application.RevolutionaryContributorImageUrl,
+					Status = application.Status,
+					PassengerName = application.Passenger.LastName + " " + application.Passenger.FirstName,
+					AdminName = application.Admin?.LastName + " " + application.Admin?.FirstName,
+					UpdatedBy = application.UpdatedBy,
+					LastUpdatedTime = application.LastUpdatedTime,
+					Note = application.Note
+				};	
+
+				return applicationDto;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error retrieving priority application: {ex.Message}");
+				return null;
 			}
 		}
 
