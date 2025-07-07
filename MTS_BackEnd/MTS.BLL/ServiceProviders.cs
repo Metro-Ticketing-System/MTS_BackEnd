@@ -12,6 +12,9 @@ namespace MTS.BLL
 		ITicketService TicketService { get; }
 		IPaymentService PaymentService { get; }
 		IPriorityApplicationService PriorityApplicationService { get; }
+		IBusRouteService BusRouteService { get; }
+		ITrainRouteService TrainRouteService { get; }
+		ITerminalService TerminalService { get; }
 		public class ServiceProviders : IServiceProviders
 		{
 			private readonly IUnitOfWork _unitOfWork;
@@ -33,6 +36,11 @@ namespace MTS.BLL
 			public IPaymentService PaymentService => new PaymentService(_configuration);
 
 			public IPriorityApplicationService PriorityApplicationService => new PriorityApplicationService(_unitOfWork, _supabaseFileService);
-		}
+			public IBusRouteService BusRouteService => new BusRouteService(_unitOfWork);
+
+            public ITrainRouteService TrainRouteService => new TrainRouteService(_unitOfWork);
+
+            public ITerminalService TerminalService => new TerminalService(_unitOfWork);
+        }
 	}
 }
