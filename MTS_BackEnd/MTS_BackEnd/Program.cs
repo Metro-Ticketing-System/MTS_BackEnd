@@ -12,6 +12,7 @@ using MTS.Data;
 using MTS.Data.Base;
 using MTS.Data.Models;
 using System.Text;
+using static MTS.BLL.IServiceProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,6 +101,8 @@ builder.Services.AddScoped<IServiceProviders, ServiceProviders>();
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<QRTokenGeneratorService>();
+builder.Services.AddScoped<IPriorityApplicationService, PriorityApplicationService>();
+builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
 
 
 var app = builder.Build();

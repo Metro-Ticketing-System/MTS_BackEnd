@@ -30,5 +30,11 @@ namespace MTS.Data.Models
 
         // Navigation property
         public ICollection<Ticket> Tickets { get; set; }
-    }
+		// 1-1: Người dùng gửi 1 đơn duy nhất
+		public PriorityApplication? PriorityApplication { get; set; }
+
+		// 1-n: Người dùng là Manager và có thể duyệt nhiều đơn
+		public ICollection<PriorityApplication> ApprovedApplications { get; set; } = new List<PriorityApplication>();
+
+	}
 }
