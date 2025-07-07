@@ -1,5 +1,4 @@
 ﻿using MTS.Data.Enums;
-using MTS.Data.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace MTS.DAL.Dtos
