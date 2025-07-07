@@ -161,12 +161,32 @@ namespace MTS.BLL.Services
 				application.LastUpdatedTime = DateTime.Now;
 
 				await _unitOfWork.GetRepository<PriorityApplication>().UpdateAsync(application);
+
+				var user = await _unitOfWork.GetRepository<User>().GetByPropertyAsync(u => u.Id == application.PassengerId && u.IsActive == true);
+
+				if (application.Status == ApplicationStatus.Approved)
+				{
+					if (application.Type == PriorityType.Student)
+					{
+						user!.IsStudent = true;
+						user!.IsRevolutionaryContributor = false;
+						await _unitOfWork.GetRepository<User>().UpdateAsync(user!);
+					}
+					else
+					{
+						user!.IsStudent = false;
+						user!.IsRevolutionaryContributor = true;
+						await _unitOfWork.GetRepository<User>().UpdateAsync(user!);
+					}
+				}
+
 				var result = await _unitOfWork.SaveAsync();
 				if (result > 0)
 				{
 					Console.WriteLine("Priority application status updated successfully!");
 					return true;
 				}
+
 				return false;
 			}
 			catch (Exception ex)
