@@ -8,6 +8,7 @@ namespace MTS.BLL.Services
 	public interface IPriorityApplicationService
 	{
 		public Task<bool> CreateAsync(CreatePriorityApplicationDto dto, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImag);
+		public Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsAsync();
 	}
 	public class PriorityApplicationService : IPriorityApplicationService
 	{
@@ -90,6 +91,44 @@ namespace MTS.BLL.Services
 			{
 				Console.WriteLine($"Error creating priority application: {ex.Message}");
 				return false;
+			}
+		}
+
+		public async Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsAsync()
+		{
+			try
+			{
+				var applications = await _unitOfWork.GetRepository<PriorityApplication>().GetAllByPropertyAsync(includeProperties: "Passenger, Admin");
+				if (applications == null || applications.Count == 0)
+				{
+					Console.WriteLine("No priority applications found.");
+					return new List<PriorityApplicationDto>();
+				}
+				var applicationDtos = applications.Select(app => new PriorityApplicationDto
+				{
+					Id = app.Id,
+					CreatedBy = app.CreatedBy,
+					CreatedTime = app.CreatedTime,
+					Type = app.Type,
+					FrontIdCardImageUrl = app.FrontIdCardImageUrl,
+					BackIdCardImageUrl = app.BackIdCardImageUrl,
+					StudentCardImageUrl = app.StudentCardImageUrl,
+					RevolutionaryContributorImageUrl = app.RevolutionaryContributorImageUrl,
+					Status = app.Status,
+					PassengerName = app.Passenger.LastName + " " + app.Passenger.FirstName,
+					AdminName = app.Admin?.LastName + " " + app.Admin?.FirstName,
+					ApprovedAt = app.ApprovedAt,
+					UpdatedBy = app.UpdatedBy,
+					LastUpdatedTime = app.LastUpdatedTime
+
+				}).ToList();
+
+				return applicationDtos;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error retrieving priority applications: {ex.Message}");
+				return new List<PriorityApplicationDto>();
 			}
 		}
 	}
