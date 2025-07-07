@@ -55,5 +55,17 @@ namespace MTS.BackEnd.Controllers
 				return BadRequest("Failed to create priority application.");
 			}
 		}
+
+		[Authorize(Roles = "1")]
+		[HttpGet("GetAllPriorityApplication")]
+		public async Task<IActionResult> GetAllAsync()
+		{
+			var applications = await _serviceProviders.PriorityApplicationService.GetAllPriorityApplicationsAsync();
+			if (applications == null || !applications.Any())
+			{
+				return NotFound("No priority applications found.");
+			}
+			return Ok(applications);
+		}
 	}
 }
