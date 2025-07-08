@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
 using MTS.BLL.Services.QRService;
 using MTS.BLL.Services.VNPayService;
+using MTS.DAL.Dtos;
 using System.Globalization;
 
 namespace MTS.BackEnd.Controllers
@@ -65,7 +66,26 @@ namespace MTS.BackEnd.Controllers
 			ticket.VnPayTransactionNo = response.TransactionId;
 			ticket.VnPayTransactionDate = response.PayDate;
 
-			var result = await _serviceProviders.TicketService.UpdateTicket(ticket);
+			var ticketDto = new TicketDto
+			{
+                TicketId = ticket.TicketId,
+                PassengerId = ticket.PassengerId,
+                PassengerName = ticket.PassengerName,
+                TicketTypeId = ticket.TicketTypeId,
+                TotalAmount = ticket.TotalAmount,
+                ValidTo = ticket.ValidTo,
+                PurchaseTime = ticket.PurchaseTime,
+                TrainRouteId = ticket.TrainRouteId,
+                QRCode = ticket.QRCode,
+                Status = ticket.Status,
+                NumberOfTicket = ticket.NumberOfTicket,
+                isPaid = ticket.isPaid,
+                TxnRef = ticket.TxnRef,
+                VnPayTransactionDate = ticket.VnPayTransactionDate,
+                VnPayTransactionNo = ticket.VnPayTransactionNo
+            };
+
+			var result = await _serviceProviders.TicketService.UpdateTicket(ticketDto);
 			if (result.IsSuccess) return Content("Ticket purchase successful!");
 			return Content("Payment failed: Could not update ticket.");
 		}

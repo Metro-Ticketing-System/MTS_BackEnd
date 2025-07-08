@@ -42,7 +42,7 @@ namespace MTS.BLL
 
 			public IUserService UserService => new UserService(_unitOfWork, _jwtSettings);
 
-			public ITicketService TicketService => new TicketService(_unitOfWork);
+			public ITicketService TicketService => new TicketService(_unitOfWork, _qrTokenGeneratorService);
 
 			public IPaymentService PaymentService => new PaymentService(_configuration);
 
@@ -51,7 +51,6 @@ namespace MTS.BLL
 			public IWalletService WalletService => new WalletService(_unitOfWork, _qrTokenGeneratorService);
 
 			public IRefundService RefundService => new RefundService(_unitOfWork, _refundGatewayService, new WalletService(_unitOfWork, _qrTokenGeneratorService));
-		}
 			public IBusRouteService BusRouteService => new BusRouteService(_unitOfWork);
 
             public ITrainRouteService TrainRouteService => new TrainRouteService(_unitOfWork);

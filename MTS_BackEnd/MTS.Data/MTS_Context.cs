@@ -21,9 +21,6 @@ namespace MTS.Data
         public virtual DbSet<BusRoute> BusRoutes { get; set; }
         public virtual DbSet<Ticket> Tickets { get; set; }
         public virtual DbSet<TicketType> TicketTypes { get; set; }
-		public virtual DbSet<User> Users { get; set; }
-		public virtual DbSet<Role> Roles { get; set; }
-		public virtual DbSet<PriorityApplication> PriorityApplications { get; set; }
 		public virtual DbSet<Wallet> Wallets { get; set; }
 		public virtual DbSet<WalletTransaction> WalletTransactions { get; set; }
 		public virtual DbSet<RefundRequestApplication> RefundRequestApplications { get; set; }

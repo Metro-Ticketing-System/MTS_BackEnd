@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using MTS.BackEnd.Infrastructure;
 using MTS.BLL;
@@ -10,8 +11,10 @@ using MTS.BLL.Services.QRService;
 using MTS.DAL.Repositories;
 using MTS.Data;
 using MTS.Data.Base;
+using MTS.Data.Enums;
 using MTS.Data.Models;
 using System.Text;
+using System.Text.Json.Serialization;
 using static MTS.BLL.IServiceProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +30,29 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.WriteIndented = true;
     });
 
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Use strings for enums in JSON serialization
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    // Ensures enums are shown as string in Swagger UI
+    c.MapType<TicketStatus>(() => new OpenApiSchema
+    {
+        Type = "string",
+        Enum = Enum.GetNames(typeof(TicketStatus))
+                   .Select(name => new OpenApiString(name))
+                   .ToList<IOpenApiAny>()
+    });
+});
+
 
 // Load JWT settings from configuration
 var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
@@ -117,6 +142,10 @@ builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IRefundService, RefundService>();
 builder.Services.AddScoped<IVNPayRefundGatewayService, VNPayRefundGatewayService>();
+builder.Services.AddScoped<ITrainRouteService, TrainRouteService>();
+builder.Services.AddScoped<IBusRouteService, BusRouteService>();
+builder.Services.AddScoped<ITerminalService, TerminalService>();
+
 
 
 var app = builder.Build();

@@ -1,6 +1,5 @@
 ﻿using MTS.Data.Base;
 using MTS.Data.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace MTS.Data.Models
 {
