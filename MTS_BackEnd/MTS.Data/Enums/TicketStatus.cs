@@ -10,6 +10,7 @@ namespace MTS.Data.Enums
     {
         InUse,
         Disabled,
-        UnUsed
-    }
+        UnUsed,
+		Refunded
+	}
 }

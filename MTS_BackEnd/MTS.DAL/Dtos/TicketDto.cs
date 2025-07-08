@@ -21,5 +21,8 @@ namespace MTS.DAL.Dtos
         public int NumberOfTicket { get; set; }
         public string? PassengerName { get; set; }
         public bool isPaid { get; set; }
-    }
+		public string? TxnRef { get; set; }
+		public string? VnPayTransactionNo { get; set; }
+		public string? VnPayTransactionDate { get; set; }
+	}
 }

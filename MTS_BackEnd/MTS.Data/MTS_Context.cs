@@ -16,6 +16,9 @@ namespace MTS.Data
 		public virtual DbSet<User> Users { get; set; }
 		public virtual DbSet<Role> Roles { get; set; }
 		public virtual DbSet<PriorityApplication> PriorityApplications { get; set; }
+		public virtual DbSet<Wallet> Wallets { get; set; }
+		public virtual DbSet<WalletTransaction> WalletTransactions { get; set; }
+		public virtual DbSet<RefundRequestApplication> RefundRequestApplications { get; set; }
 
 		public static string GetConnectionString(string connectionStringName)
 		{
@@ -63,6 +66,48 @@ namespace MTS.Data
 				.HasOne(p => p.Admin)
 				.WithMany(m => m.ModeratedApplications)
 				.HasForeignKey(p => p.AdminId)
+				.OnDelete(DeleteBehavior.Restrict);
+
+			// Wallet 
+			modelBuilder.Entity<Wallet>()
+				.Property(w => w.Balance)
+				.HasPrecision(18, 2);
+
+
+			// Wallet Transaction
+			modelBuilder.Entity<WalletTransaction>()
+				.Property(t => t.Amount)
+				.HasPrecision(18, 2);
+
+			modelBuilder.Entity<WalletTransaction>()
+				.Property(t => t.Type)
+				.HasConversion<string>();
+
+			modelBuilder.Entity<WalletTransaction>()
+				.Property(t => t.Status)
+				.HasConversion<string>();
+
+			// Refund Request
+			modelBuilder.Entity<RefundRequestApplication>()
+				.Property(t => t.Status)
+				.HasConversion<string>();
+
+			modelBuilder.Entity<RefundRequestApplication>()
+				.HasOne(rr => rr.Passenger)
+				.WithMany(u => u.RefundRequestApplications)
+				.HasForeignKey(rr => rr.PassengerId)
+				.OnDelete(DeleteBehavior.Cascade);
+
+			modelBuilder.Entity<RefundRequestApplication>()
+				.HasOne(rr => rr.Admin)
+				.WithMany(u => u.ProcessedRefundRequests)
+				.HasForeignKey(rr => rr.AdminId)
+				.OnDelete(DeleteBehavior.Restrict);
+
+			modelBuilder.Entity<RefundRequestApplication>()
+				.HasOne(rr => rr.Ticket)
+				.WithMany() // A ticket can only have one refund request if we enforce it in business logic
+				.HasForeignKey(rr => rr.TicketId)
 				.OnDelete(DeleteBehavior.Restrict);
 
 			// TicketType

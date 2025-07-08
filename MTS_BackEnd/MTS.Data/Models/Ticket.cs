@@ -17,8 +17,13 @@ namespace MTS.Data.Models
         public int NumberOfTicket { get; set; }
         public bool isPaid { get; set; } = false;
 
-        // Navigation properties
-        public TicketType TicketType { get; set; }
+		// --- Fields for VNPay ---
+		public string? TxnRef { get; set; } // The original vnp_TxnRef from payment
+		public string? VnPayTransactionNo { get; set; } // The vnp_TransactionNo from VNPay
+		public string? VnPayTransactionDate { get; set; } // Storing as yyyyMMddHHmmss
+
+		// Navigation properties
+		public TicketType TicketType { get; set; }
         public TrainRoute TrainRoute { get; set; }
         public User Passenger { get; set; }
 

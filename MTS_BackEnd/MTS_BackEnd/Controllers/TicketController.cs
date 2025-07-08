@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
 using MTS.DAL.Dtos;
+using System.Security.Claims;
 
 namespace MTS.BackEnd.Controllers
 {
@@ -31,5 +33,22 @@ namespace MTS.BackEnd.Controllers
             }    
             return Ok(result);
         }
-    }
+
+		[HttpPost("PayWithWallet")]
+		[Authorize]
+		public async Task<IActionResult> PayTicketWithWallet([FromBody] int ticketId)
+		{
+			var userId = User.FindFirstValue("id");
+			if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+			var success = await _serviceProviders.WalletService.PurchaseTicketWithWalletAsync(Guid.Parse(userId), ticketId);
+
+			if (!success)
+			{
+				return BadRequest("Payment failed. Please check your wallet balance or ticket status.");
+			}
+
+			return Ok("Ticket purchased successfully with wallet.");
+		}
+	}
 }
