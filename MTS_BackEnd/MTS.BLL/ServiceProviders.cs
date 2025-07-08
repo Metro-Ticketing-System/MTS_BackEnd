@@ -17,6 +17,9 @@ namespace MTS.BLL
 		IPriorityApplicationService PriorityApplicationService { get; }
 		IWalletService WalletService { get; }
 		IRefundService RefundService { get; }
+		IBusRouteService BusRouteService { get; }
+		ITrainRouteService TrainRouteService { get; }
+		ITerminalService TerminalService { get; }
 		public class ServiceProviders : IServiceProviders
 		{
 			private readonly IUnitOfWork _unitOfWork;
@@ -49,5 +52,11 @@ namespace MTS.BLL
 
 			public IRefundService RefundService => new RefundService(_unitOfWork, _refundGatewayService, new WalletService(_unitOfWork, _qrTokenGeneratorService));
 		}
+			public IBusRouteService BusRouteService => new BusRouteService(_unitOfWork);
+
+            public ITrainRouteService TrainRouteService => new TrainRouteService(_unitOfWork);
+
+            public ITerminalService TerminalService => new TerminalService(_unitOfWork);
+        }
 	}
 }

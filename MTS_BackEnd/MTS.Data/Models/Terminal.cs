@@ -15,6 +15,6 @@ namespace MTS.Data.Models
         // Navigation properties
         public ICollection<TrainRoute> StartRoutes { get; set; }
         public ICollection<TrainRoute> EndRoutes { get; set; }
-
+        public ICollection<BusRoute> BusRoutes { get; set; }
     }
 }
