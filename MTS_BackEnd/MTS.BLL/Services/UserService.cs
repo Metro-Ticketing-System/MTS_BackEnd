@@ -20,6 +20,7 @@ namespace MTS.BLL.Services
 		Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result);
 		Task<List<UserAccountDto>> GetAllUsers();
 		Task<UserAccountDto?> GetUserAsync(Guid id);
+		public Task<RegisterResultDto> ResendVerificationEmailAsync(string email);
 		public class UserService : IUserService
 		{
 			private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
@@ -329,6 +330,43 @@ namespace MTS.BLL.Services
 					return null;
 				}
 			}
+
+			public async Task<RegisterResultDto> ResendVerificationEmailAsync(string email)
+			{
+				try
+				{
+					var user = await _userRepo.GetByPropertyAsync(u => u.Email == email);
+					if (user == null || user.EmailConfirmed)
+					{
+						// User not found or email already confirmed
+						return new RegisterResultDto { IsSuccess = false };
+					}
+
+					var verificationToken = Guid.NewGuid().ToString();
+					user.EmailVerificationToken = verificationToken;
+					user.EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5);
+
+					await _userRepo.UpdateAsync(user);
+					var succeedCount = await _unitOfWork.SaveAsync();
+
+					if (succeedCount > 0)
+					{
+						return new RegisterResultDto
+						{
+							IsSuccess = true,
+							Email = user.Email,
+							VerificationToken = verificationToken
+						};
+					}
+					return new RegisterResultDto { IsSuccess = false };
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error during resending verification email: {ex.Message}");
+					return new RegisterResultDto { IsSuccess = false };
+				}
+			}
+
 		}
 	}
 }

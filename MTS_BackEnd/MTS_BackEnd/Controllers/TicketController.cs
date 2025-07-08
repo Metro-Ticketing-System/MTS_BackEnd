@@ -34,9 +34,9 @@ namespace MTS.BackEnd.Controllers
             return Ok(result);
         }
 
-		[HttpPost("PayWithWallet")]
+		[HttpPost("PayWithWallet/{ticketId}")]
 		[Authorize]
-		public async Task<IActionResult> PayTicketWithWallet([FromBody] int ticketId)
+		public async Task<IActionResult> PayTicketWithWallet([FromRoute] int ticketId)
 		{
 			var userId = User.FindFirstValue("id");
 			if (string.IsNullOrEmpty(userId)) return Unauthorized();

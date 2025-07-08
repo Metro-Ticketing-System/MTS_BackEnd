@@ -59,6 +59,31 @@ namespace MTS.BackEnd.Controllers
 			return BadRequest("Invalid verification link or email already verified.");
 		}
 
+		[HttpPost("resend-verification-email")]
+		public async Task<IActionResult> ResendVerificationEmail([FromQuery][Required] string email)
+		{
+			if (string.IsNullOrEmpty(email))
+			{
+				return BadRequest("Email is required.");
+			}
+
+			var resendResult = await _serviceProviders.UserService.ResendVerificationEmailAsync(email);
+			if (!resendResult.IsSuccess)
+			{
+				return BadRequest("Could not resend verification email. The email may not be registered or is already verified.");
+			}
+
+			var verificationLink = $"https://HCMCMTS.com/user/verify-email?token={resendResult.VerificationToken}&email={Uri.EscapeDataString(resendResult.Email!)}";
+
+			await Task.Run(async () =>
+			{
+				await _emailSender.SendEmailAsync(resendResult.Email, "Email Verification",
+					$"Please verify your email: <a href='{verificationLink}'>Verify</a>");
+			});
+
+			return Ok("Verification email sent successfully. Please check your email.");
+		}
+
 		[HttpPost("login")]
 		public async Task<IActionResult> Login([FromBody] LoginRequestModelDto request)
 		{
@@ -76,6 +101,27 @@ namespace MTS.BackEnd.Controllers
 
 		[HttpPost("forgot-password")]
 		public async Task<IActionResult> ForgotPassword([FromQuery][Required] string email)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			if (string.IsNullOrEmpty(email)) return BadRequest("Email must not be empty!");
+			var result = await _serviceProviders.UserService.RequestPasswordReset(email);
+			if (!result.IsSucceed) return NotFound("Email is not registered!");
+
+			var resetLink = $"https://HCMCMTS.com/user/reset-password?token={result.PasswordResetToken}&email={Uri.EscapeDataString(email)}";
+			await Task.Run(async () =>
+			{
+				await _emailSender.SendEmailAsync(email, "Password Reset Request",
+					$"Please click to reset your password: <a href='{resetLink}'>Reset Password</a>");
+			});
+			return Ok("Password reset link has been sent to your email.");
+		}
+
+		[HttpPost("resend-password-reset-email")]
+		public async Task<IActionResult> ResendPasswordResetEmail([FromQuery][Required] string email)
 		{
 			if (!ModelState.IsValid)
 			{
