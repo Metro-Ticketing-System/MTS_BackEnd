@@ -42,7 +42,7 @@ namespace MTS.BLL
 
 			public IUserService UserService => new UserService(_unitOfWork, _jwtSettings);
 
-			public ITicketService TicketService => new TicketService(_unitOfWork);
+			public ITicketService TicketService => new TicketService(_unitOfWork, _qrTokenGeneratorService);
 
 			public IPaymentService PaymentService => new PaymentService(_configuration);
 
