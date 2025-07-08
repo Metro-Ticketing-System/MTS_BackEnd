@@ -21,7 +21,7 @@ namespace MTS.BackEnd.Controllers
 			_emailSender = emailSender;
 		}
 
-		[HttpPost("Register")]
+		[HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterRequestDto request)
 		{
 			if (!ModelState.IsValid)
@@ -44,7 +44,7 @@ namespace MTS.BackEnd.Controllers
 			return Ok("Registration successful. Please check your email to verify your account.");
 		}
 
-		[HttpPost("VerifyEmail")]
+		[HttpPost("verify-email")]
 		public async Task<IActionResult> VerifyEmail([FromQuery] string email, [FromQuery] string token)
 		{
 			if (!ModelState.IsValid)
@@ -59,7 +59,7 @@ namespace MTS.BackEnd.Controllers
 			return BadRequest("Invalid verification link or email already verified.");
 		}
 
-		[HttpPost("Login")]
+		[HttpPost("login")]
 		public async Task<IActionResult> Login([FromBody] LoginRequestModelDto request)
 		{
 			if (!ModelState.IsValid)
@@ -74,7 +74,7 @@ namespace MTS.BackEnd.Controllers
 			return Ok(loginResponse);
 		}
 
-		[HttpPost("ForgotPassword")]
+		[HttpPost("forgot-password")]
 		public async Task<IActionResult> ForgotPassword([FromQuery][Required] string email)
 		{
 			if (!ModelState.IsValid)
@@ -95,7 +95,7 @@ namespace MTS.BackEnd.Controllers
 			return Ok("Password reset link has been sent to your email.");
 		}
 
-		[HttpPost("ResetPassword")]
+		[HttpPost("reset-password")]
 		public async Task<IActionResult> ResetPassword([FromQuery][Required] string token, [FromBody] PasswordResetRequestDto dto)
 		{
 			if (!ModelState.IsValid)
@@ -112,7 +112,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpPost("CreateStaffAccount")]
+		[HttpPost("create-staff-account")]
 		public async Task<IActionResult> CreateStaffAccount([FromBody] StaffAccountDto staffAccountDto)
 		{
 			if (!ModelState.IsValid)
@@ -123,11 +123,11 @@ namespace MTS.BackEnd.Controllers
 			if (staffAccountDto == null) return BadRequest("Staff account data is required!");
 			var result = await _serviceProviders.UserService.CreateStaffAccount(staffAccountDto);
 			if (result < 0) return Conflict("User already exists!");
-			return Ok("Staff account created successfully!");
+			return CreatedAtAction(nameof(result), null, "Staff account created successfully!");
 		}
 
 		[Authorize]
-		[HttpPost("GetUserProfile")]
+		[HttpPost("get-user-profile")]
 		public async Task<IActionResult> GetUserProfile()
 		{
 			if (!ModelState.IsValid)
@@ -143,7 +143,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize]
-		[HttpPut("UpdateProfile")]
+		[HttpPut("update-profile")]
 		public async Task<IActionResult> UpdateProfile([FromBody] UserProfileDto userProfileDto)
 		{
 			if (!ModelState.IsValid)
@@ -160,7 +160,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpPatch("SetUserAccountIsActiveStatus")]
+		[HttpPatch("set-user-account-isActive-status")]
 		public async Task<IActionResult> SetUserAccountIsActiveStatus([FromQuery] Guid userId, [FromQuery] bool result)
 		{
 			if (!ModelState.IsValid)
@@ -174,7 +174,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpGet("GetAllUserAccounts")]
+		[HttpGet("get-all-user-accounts")]
 		public async Task<IActionResult> GetAllUserAccounts()
 		{
 			if (!ModelState.IsValid)

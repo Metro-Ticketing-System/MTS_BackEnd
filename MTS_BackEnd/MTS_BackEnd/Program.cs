@@ -34,6 +34,8 @@ var jwtSettingsSection = builder.Configuration.GetSection("JwtSettings");
 builder.Services.Configure<JWTSettings>(jwtSettingsSection);
 var jwtSettings = jwtSettingsSection.Get<JWTSettings>();
 builder.Services.AddSingleton(jwtSettings);
+builder.Services.AddHttpClient();
+
 
 // Add Swagger with JWT support
 builder.Services.AddSwaggerGen(options =>
@@ -112,6 +114,9 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<QRTokenGeneratorService>();
 builder.Services.AddScoped<IPriorityApplicationService, PriorityApplicationService>();
 builder.Services.AddScoped<ISupabaseFileService, SupabaseFileService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
+builder.Services.AddScoped<IRefundService, RefundService>();
+builder.Services.AddScoped<IVNPayRefundGatewayService, VNPayRefundGatewayService>();
 
 
 var app = builder.Build();

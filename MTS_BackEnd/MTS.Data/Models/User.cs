@@ -27,14 +27,17 @@ namespace MTS.Data.Models
 		public bool IsRevolutionaryContributor { get; set; } = false;
 		public int RoleId { get; set; }
 		public virtual Role Role { get; set; } = null!;
+		public virtual Wallet Wallet { get; set; } = null!;
 
-        // Navigation property
-        public ICollection<Ticket> Tickets { get; set; }
+		// Navigation property
+		public ICollection<Ticket> Tickets { get; set; }
 		// 1-1: Người dùng gửi nhiều đơn (nếu bị từ chối)
 		public ICollection<PriorityApplication> PriorityApplications { get; set; } = new List<PriorityApplication>();
 
 		// 1-n: Người dùng là Manager và có thể duyệt nhiều đơn
 		public ICollection<PriorityApplication> ModeratedApplications { get; set; } = new List<PriorityApplication>();
-
+		public ICollection<RefundRequestApplication> RefundRequestApplications { get; set; } = new List<RefundRequestApplication>();
+		public ICollection<RefundRequestApplication> ProcessedRefundRequests { get; set; } = new List<RefundRequestApplication>();
 	}
+
 }

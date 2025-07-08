@@ -18,7 +18,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "3")]
-		[HttpPost("Create")]
+		[HttpPost("create")]
 		public async Task<IActionResult> Create([FromForm] PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImage)
 		{
 			if (!ModelState.IsValid)
@@ -52,7 +52,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpGet("GetAll")]
+		[HttpGet("get-all")]
 		public async Task<IActionResult> GetAll()
 		{
 			var applications = await _serviceProviders.PriorityApplicationService.GetAllPriorityApplicationsAsync();
@@ -65,7 +65,7 @@ namespace MTS.BackEnd.Controllers
 
 
 		[Authorize(Roles = "1")]
-		[HttpPatch("SetStatus")]
+		[HttpPatch("set-status")]
 		public async Task<IActionResult> SetStatus([FromQuery][Required] int applicationId, [Required]ApplicationStatus applicationStatus, string? note)
 		{
 			var adminId = User.FindFirstValue("id");
@@ -80,7 +80,7 @@ namespace MTS.BackEnd.Controllers
 		}
 
 		[Authorize(Roles = "1")]
-		[HttpGet("Detail/{applicationId}")]
+		[HttpGet("detail/{applicationId}")]
 		public async Task<IActionResult> Get([FromRoute][Required] int applicationId)
 		{
 			var application = await _serviceProviders.PriorityApplicationService.GetPriorityApplicationAsync(applicationId);

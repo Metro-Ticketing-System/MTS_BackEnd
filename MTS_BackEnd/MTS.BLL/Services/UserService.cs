@@ -19,6 +19,7 @@ namespace MTS.BLL.Services
 		Task<bool> UpdateProfile(UserProfileDto userProfileDto);
 		Task<bool> SetUserAccountIsActiveStatus(Guid userId, bool result);
 		Task<List<UserAccountDto>> GetAllUsers();
+		Task<UserAccountDto?> GetUserAsync(Guid id);
 		public class UserService : IUserService
 		{
 			private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
@@ -56,7 +57,7 @@ namespace MTS.BLL.Services
 						RoleId = 2,
 						IsActive = true,
 						EmailConfirmed = true,
-						CreatedAt = DateTime.Now
+						CreatedAt = DateTime.UtcNow
 					};
 
 					await _userRepo.AddAsync(newAccount);
@@ -105,10 +106,10 @@ namespace MTS.BLL.Services
 					account.IsActive = result;
 					if (result == false)
 					{
-						account.DeletedAt = DateTime.Now;
+						account.DeletedAt = DateTime.UtcNow;
 					}
 					account.DeletedAt = null; // Reset DeletedAt if activating the account
-					account.UpdatedAt = DateTime.Now;
+					account.UpdatedAt = DateTime.UtcNow;
 					await _userRepo.UpdateAsync(account);
 					var finalResult = await _unitOfWork.SaveAsync();
 					if (finalResult > 0)
@@ -164,11 +165,11 @@ namespace MTS.BLL.Services
 						NormalizedEmail = registerRequest.Email.ToUpperInvariant(),
 						PasswordHash = passwordHash,
 						RoleId = 3,
-						CreatedAt = DateTime.Now,
+						CreatedAt = DateTime.UtcNow,
 						IsActive = false,
 						EmailConfirmed = false,
 						EmailVerificationToken = verificationToken,
-						EmailVerificationTokenExpiry = DateTime.Now.AddMinutes(5),
+						EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5),
 					};
 
 					await _userRepo.AddAsync(user);
@@ -200,7 +201,7 @@ namespace MTS.BLL.Services
 					if (user == null) return new PasswordResetRequestResultDto { IsSucceed = false };
 
 					user.PasswordResetToken = Guid.NewGuid().ToString();
-					user.PasswordResetTokenExpiry = DateTime.Now.AddMinutes(5);
+					user.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(5);
 					await _userRepo.UpdateAsync(user);
 					var result = await _unitOfWork.SaveAsync();
 					if (result > 0) return new PasswordResetRequestResultDto
@@ -222,7 +223,7 @@ namespace MTS.BLL.Services
 			{
 				try
 				{
-					var user = await _userRepo.GetByPropertyAsync(u => u.PasswordResetToken == token && u.PasswordResetTokenExpiry > DateTime.Now);
+					var user = await _userRepo.GetByPropertyAsync(u => u.PasswordResetToken == token && u.PasswordResetTokenExpiry > DateTime.UtcNow);
 					if (user == null) return false;
 
 					user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
@@ -252,7 +253,7 @@ namespace MTS.BLL.Services
 					user.FirstName = userProfileDto.FirstName;
 					user.LastName = userProfileDto.LastName;
 					user.DateOfBirth = userProfileDto.DateOfBirth;
-					user.UpdatedAt = DateTime.Now;
+					user.UpdatedAt = DateTime.UtcNow;
 					await _userRepo.UpdateAsync(user);
 					var result = await _unitOfWork.SaveAsync();
 					if (result > 0)
@@ -272,7 +273,7 @@ namespace MTS.BLL.Services
 			{
 				try
 				{
-					var user = await _userRepo.GetByPropertyAsync(u => u.Email == email && u.EmailVerificationToken == token && u.EmailVerificationTokenExpiry > DateTime.Now);
+					var user = await _userRepo.GetByPropertyAsync(u => u.Email == email && u.EmailVerificationToken == token && u.EmailVerificationTokenExpiry > DateTime.UtcNow);
 					if (user == null) return false;
 					user.EmailConfirmed = true;
 					user.EmailVerificationToken = null;
@@ -310,6 +311,22 @@ namespace MTS.BLL.Services
 				{
 					Console.WriteLine($"Error retrieving all users: {ex.Message}");
 					return new List<UserAccountDto>();
+				}
+			}
+
+			public async Task<UserAccountDto?> GetUserAsync(Guid id)
+			{
+				try
+				{
+					var user = await _userRepo.GetByPropertyAsync(u => u.Id == id && u.IsActive == true);
+					if (user == null) return null;
+					return UserAccountDto.FromModelToDto(user);
+
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error retrieving user: {ex.Message}");
+					return null;
 				}
 			}
 		}
