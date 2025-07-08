@@ -24,7 +24,7 @@ namespace MTS.BLL
 		{
 			private readonly IUnitOfWork _unitOfWork;
 			private readonly JWTSettings _jwtSettings;
-			private readonly IConfiguration _configuration; 
+			private readonly IConfiguration _configuration;
 			private readonly ISupabaseFileService _supabaseFileService;
 			private readonly QRTokenGeneratorService _qrTokenGeneratorService;
 			private readonly IHttpClientFactory _httpClientFactory;
@@ -51,12 +51,12 @@ namespace MTS.BLL
 			public IWalletService WalletService => new WalletService(_unitOfWork, _qrTokenGeneratorService);
 
 			public IRefundService RefundService => new RefundService(_unitOfWork, _refundGatewayService, new WalletService(_unitOfWork, _qrTokenGeneratorService));
-		}
 			public IBusRouteService BusRouteService => new BusRouteService(_unitOfWork);
 
-            public ITrainRouteService TrainRouteService => new TrainRouteService(_unitOfWork);
+			public ITrainRouteService TrainRouteService => new TrainRouteService(_unitOfWork);
 
-            public ITerminalService TerminalService => new TerminalService(_unitOfWork);
-        }
+			public ITerminalService TerminalService => new TerminalService(_unitOfWork);
+		}
 	}
 }
+
