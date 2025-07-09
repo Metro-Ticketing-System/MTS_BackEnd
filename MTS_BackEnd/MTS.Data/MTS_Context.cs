@@ -313,25 +313,32 @@ namespace MTS.Data
             var ticketType1 = new TicketType
             {
                 Id = 1,
-                TicketTypeName = "Standard",
-                Price = 150000m
+                TicketTypeName = "SingleRide",
+                Price = 0m
             };
 
             var ticketType2 = new TicketType
             {
                 Id = 2,
-                TicketTypeName = "VIP",
-                Price = 300000m
+                TicketTypeName = "DayPass",
+                Price = 40000m
             };
 
             var ticketType3 = new TicketType
             {
                 Id = 3,
-                TicketTypeName = "Student",
-                Price = 100000m
+                TicketTypeName = "MonthPass",
+                Price = 300000m
             };
 
-            modelBuilder.Entity<TicketType>().HasData(ticketType1, ticketType2, ticketType3);
+            var ticketType4 = new TicketType
+            {
+                Id = 4,
+                TicketTypeName = "Priority",
+                Price = 0m
+            };
+
+            modelBuilder.Entity<TicketType>().HasData(ticketType1, ticketType2, ticketType3, ticketType4);
 
             #endregion
 

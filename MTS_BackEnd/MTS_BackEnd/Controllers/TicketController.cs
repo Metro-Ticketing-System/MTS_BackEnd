@@ -28,9 +28,9 @@ namespace MTS.BackEnd.Controllers
             }
 
             var result = await _serviceProviders.TicketService.CreateTicket(request);
-            if(!result.IsSuccess)
+            if(result == null || result.IsSuccess)
             {
-                return BadRequest(result);
+                return BadRequest(result ?? null);
             }    
             return Ok(result);
         }

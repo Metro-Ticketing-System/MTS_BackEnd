@@ -95,7 +95,7 @@ namespace MTS.BLL.Services
 			}
 
 			var ticket = refundRequest.Ticket;
-			decimal refundAmount = ticket.TotalAmount * 0.9m;
+			var refundAmount = ticket.TotalAmount * 0.9m;
 
 			// Check if it was a VNPay transaction
 			if (!string.IsNullOrEmpty(ticket.TxnRef) && !string.IsNullOrEmpty(ticket.VnPayTransactionNo) && !string.IsNullOrEmpty(ticket.VnPayTransactionDate))
@@ -126,7 +126,7 @@ namespace MTS.BLL.Services
 			{
 				var walletRefundSuccess = await _walletService.AddToWalletAsync(
 					refundRequest.PassengerId, 
-					refundAmount, 
+					refundAmount.Value, 
 					TransactionType.Refund, 
 					$"Refund for ticket {ticket.Id}"
 				);

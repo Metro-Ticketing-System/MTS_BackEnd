@@ -7,7 +7,7 @@ namespace MTS.DAL.Dtos
 		public int Id { get; set; }
 		public int TicketId { get; set; }
 		public string PassengerName { get; set; }
-		public decimal TicketAmount { get; set; }
+		public decimal? TicketAmount { get; set; }
 		public string Reason { get; set; }
 		public ApplicationStatus Status { get; set; }
 		public DateTime RequestedAt { get; set; }
