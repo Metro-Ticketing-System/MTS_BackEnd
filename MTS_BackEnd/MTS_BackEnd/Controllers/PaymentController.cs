@@ -40,21 +40,32 @@ namespace MTS.BackEnd.Controllers
 		public async Task<IActionResult> PaymentCallback()
 		{
 			var response = _serviceProviders.PaymentService.PaymentExecute(Request.Query);
-			if (response == null || response.OrderId == null) return Content("Payment failed: Invalid response.");
+			if (response == null || response.OrderId == null)
+			{
+				return Redirect("metroapp://payment-result");
+			}	
 			if (response.VnPayResponseCode != "00")
 			{
 				if (TryParseTicketId(response.OrderId, out int ticketId)) await _serviceProviders.TicketService.DeleteTicket(ticketId);
-				return Content($"Payment failed. Status code: {response.VnPayResponseCode}");
-			}
+                return Redirect($"metroapp://payment-result?status={response.VnPayResponseCode}&orderId={response.OrderId}");
+            }
 			if (response.OrderId.StartsWith("WALLET_")) return await HandleWalletTopUp(response);
 			else return await HandleTicketPurchase(response);
 		}
 
 		private async Task<IActionResult> HandleTicketPurchase(PaymentResponseModel response)
 		{
-			if (!TryParseTicketId(response.OrderId, out int ticketId)) return Content("Payment failed: Could not parse ticket info.");
+			if (!TryParseTicketId(response.OrderId, out int ticketId))
+			{
+				return Redirect($"metroapp://payment-result?status=01&orderId={response.OrderId}");
+            } 
+				
 			var ticket = await _serviceProviders.TicketService.GetTicketById(ticketId);
-			if (ticket == null) return Content("Payment failed: Ticket not found.");
+			if (ticket == null)
+			{
+                return Redirect($"metroapp://payment-result?status=01&orderId={response.OrderId}");
+            } 
+				
 
 			ticket.Status = Data.Enums.TicketStatus.UnUsed;
 			ticket.isPaid = true;
@@ -86,9 +97,12 @@ namespace MTS.BackEnd.Controllers
             };
 
 			var result = await _serviceProviders.TicketService.UpdateTicket(ticketDto);
-			if (result.IsSuccess) return Content("Ticket purchase successful!");
-			return Content("Payment failed: Could not update ticket.");
-		}
+			if (result.IsSuccess)
+			{
+                return Redirect($"metroapp://payment-result?status={response.VnPayResponseCode}&vnPayTransactionNo={ticket.VnPayTransactionNo}&totalAmountn={ticket.TotalAmount}");
+            }
+            return Redirect($"metroapp://payment-result?status=01&orderId={response.OrderId}");
+        }
 
 		private async Task<IActionResult> HandleWalletTopUp(PaymentResponseModel response)
 		{
