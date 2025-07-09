@@ -8,7 +8,7 @@ namespace MTS.DAL.Dtos
         [Required(ErrorMessage = "PassengerId is required.")]
         public Guid PassengerId { get; set; } // FK to User
         public int TicketTypeId { get; set; } // FK to TicketType
-        public decimal? TotalAmount { get; set; }
+        public decimal TotalAmount { get; set; }
         public int? TrainRouteId { get; set; } // FK to TrainRoute
         public int? NumberOfTicket { get; set; }
     }

@@ -120,7 +120,7 @@ namespace MTS.BLL.Services
 			if (wallet == null || ticket == null || ticket.isPaid) return false;
 			if (wallet.Balance < ticket.TotalAmount) return false;
 
-			wallet.Balance -= ticket.TotalAmount.Value;
+			wallet.Balance -= ticket.TotalAmount;
 			wallet.UpdatedAt = DateTime.UtcNow;
 			await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
 

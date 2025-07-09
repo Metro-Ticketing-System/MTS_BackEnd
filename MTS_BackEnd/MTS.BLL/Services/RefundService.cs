@@ -126,7 +126,7 @@ namespace MTS.BLL.Services
 			{
 				var walletRefundSuccess = await _walletService.AddToWalletAsync(
 					refundRequest.PassengerId, 
-					refundAmount.Value, 
+					refundAmount, 
 					TransactionType.Refund, 
 					$"Refund for ticket {ticket.Id}"
 				);
