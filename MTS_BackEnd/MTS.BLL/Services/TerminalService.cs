@@ -24,7 +24,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var terminals = await _terminalRepo.GetAllByPropertyAsync();
+                var terminals = await _terminalRepo.GetAllByPropertyAsync(t => t.IsDeleted == false);
                 if(terminals == null || terminals.Count == 0)
                 {
                     Console.WriteLine("No terminal found.");
@@ -51,7 +51,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var terminal = await _terminalRepo.GetByPropertyAsync(t => t.Id == terminalId, includeProperties: "BusRoutes");
+                var terminal = await _terminalRepo.GetByPropertyAsync(t => t.Id == terminalId && t.IsDeleted == false, includeProperties: "BusRoutes");
                 if(terminal == null)
                 {
                     Console.WriteLine("No terminal found.");
@@ -76,7 +76,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var terminal = await _terminalRepo.GetByPropertyAsync(t => t.Id == terminalId, includeProperties: "StartRoutes, EndRoutes, BusRoutes");
+                var terminal = await _terminalRepo.GetByPropertyAsync(t => t.Id == terminalId && t.IsDeleted == false, includeProperties: "StartRoutes, EndRoutes, BusRoutes");
                 if (terminal == null) 
                 {
                     return null;

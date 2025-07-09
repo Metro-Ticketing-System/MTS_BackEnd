@@ -8,6 +8,7 @@ namespace MTS.DAL.Dtos
 {
     public class TicketTypeDto
     {
+        public int TicketTypeId { get; set; }
         public string TicketTypeName { get; set; }
         public decimal Price { get; set; }
     }

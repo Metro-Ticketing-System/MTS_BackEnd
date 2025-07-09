@@ -29,7 +29,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var terminals = await _terminalRepo.GetAllByPropertyAsync(t => request.TerminalId.Contains(t.Id));
+                var terminals = await _terminalRepo.GetAllByPropertyAsync(t => request.TerminalId.Contains(t.Id) && t.IsDeleted == false);
                 var busRoute = new BusRoute
                 {
                     CreatedTime = DateTime.Now,
@@ -62,9 +62,15 @@ namespace MTS.BLL.Services
         {
             try
             {
-                await _busRouteRepo.DeleteAsync(id);
-                await _unitOfWork.SaveAsync();
-                return true;
+                var br = await _busRouteRepo.GetByPropertyAsync(tr => tr.Id == id);
+                if(br != null)
+                {
+                    br.IsDeleted = true;
+                    await _busRouteRepo.UpdateAsync(br);
+                    await _unitOfWork.SaveAsync();
+                    return true;
+                }   
+                return false;
             }
             catch (Exception ex)
             {
@@ -77,7 +83,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var bus = await _busRouteRepo.GetByPropertyAsync(t => t.Id == id, includeProperties: "Terminals");
+                var bus = await _busRouteRepo.GetByPropertyAsync(t => t.Id == id && t.IsDeleted == false, includeProperties: "Terminals");
                 if (bus == null)
                 {
                     return null;
@@ -101,8 +107,8 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var terminals = await _terminalRepo.GetAllByPropertyAsync(t => request.TerminalId.Contains(t.Id));
-                var model = await _busRouteRepo.GetByPropertyAsync(t => t.Id == request.BusRouteId);
+                var terminals = await _terminalRepo.GetAllByPropertyAsync(t => request.TerminalId.Contains(t.Id) && t.IsDeleted == false);
+                var model = await _busRouteRepo.GetByPropertyAsync(t => t.Id == request.BusRouteId && t.IsDeleted == false);
                 if(model == null)
                 {
                     return new CreateBusRouteResponse { IsSuccess = false };

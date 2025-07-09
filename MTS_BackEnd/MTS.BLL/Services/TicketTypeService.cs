@@ -24,6 +24,7 @@ namespace MTS.BLL.Services
                 var tt = await _ticketTypeRepo.GetAllByPropertyAsync();
                 var result = tt.Select(t => new TicketTypeDto
                 {
+                    TicketTypeId = t.Id,
                     TicketTypeName = t.TicketTypeName,
                     Price = t.Price,
                 }).ToList();
