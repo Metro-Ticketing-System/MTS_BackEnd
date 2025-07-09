@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
+using MTS.BLL.Services.QRService;
 using MTS.DAL.Dtos;
 using System.Security.Claims;
 
@@ -144,5 +145,21 @@ namespace MTS.BackEnd.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("generate-qr")]
+        public async Task<IActionResult> GetDynamicQrCode(int id)
+        {
+            var ticket = await _serviceProviders.TicketService.GetTicketById(id);
+            if (ticket == null)
+                return NotFound();
+            var user = await _serviceProviders.UserService.GetUserAsync(ticket.PassengerId);
+            if (user == null)
+                return NotFound();
+
+            var token = await _serviceProviders.TicketService.GenerateQRToken(ticket.PassengerId, ticket.TicketId);
+
+            return Ok(new { qrToken = token });
+        }
+
     }
 }

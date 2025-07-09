@@ -21,6 +21,7 @@ namespace MTS.BLL.Services
 		Task<List<TicketResponse>> GetListTicket(Guid userId);
         Task<CreateTicketResponseDto> DisableTicket(int id);
         Task<CreateTicketResponseDto> ActiveTicket(int id);
+		Task<string> GenerateQRToken(Guid userId, int ticketId);
     }
 
 	public class TicketService : ITicketService
@@ -296,6 +297,20 @@ namespace MTS.BLL.Services
                     };
                 }
                 return new CreateTicketResponseDto { IsSuccess = false };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<string> GenerateQRToken(Guid userId, int ticketId)
+        {
+            try
+            {
+				var token = _qRTokenGeneratorService.GenerateQRToken(ticketId, userId);
+				return token;
             }
             catch (Exception ex)
             {
