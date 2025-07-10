@@ -2,6 +2,7 @@
 using MTS.BLL.Services.QRService;
 using MTS.DAL.Dtos;
 using MTS.DAL.Repositories;
+using MTS.Data.Enums;
 using MTS.Data.Models;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace MTS.BLL.Services
         Task<CreateTicketResponseDto> DisableTicket(int id);
         Task<CreateTicketResponseDto> ActiveTicket(int id);
 		Task<string> GenerateQRToken(Guid userId, int ticketId);
+		Task<QRScanResponse> QRScan(QRScanRequest request);
     }
 
 	public class TicketService : ITicketService
@@ -316,6 +318,100 @@ namespace MTS.BLL.Services
             {
                 Console.WriteLine($"Error during login: {ex.Message}");
                 return null;
+            }
+        }
+
+        public async Task<QRScanResponse> QRScan(QRScanRequest request)
+        {
+            try
+            {
+                var principal = _qRTokenGeneratorService.ValidateQRToken(request.QRToken);
+                if (principal == null)
+                {
+                    return new QRScanResponse { Message = "QR không hợp lệ hoặc đã hết hạn." };
+                }
+
+                var ticketId = int.Parse(principal.FindFirst("ticket_id")!.Value);
+                var userId = Guid.Parse(principal.FindFirst("user_id")!.Value);
+
+                var ticket = await _ticketRepo.GetByPropertyAsync(t => t.Id == ticketId, includeProperties: "Passenger, TrainRoute, TicketType");
+                if (ticket == null || ticket.PassengerId != userId)
+                {
+                    return new QRScanResponse { Message = "Không tìm thấy vé hoặc thông tin người dùng không khớp." };
+                }
+
+                if (ticket.ValidTo < DateTime.UtcNow)
+                {
+                    return new QRScanResponse
+                    {
+                        Message = "Vé đã hết hạn sử dụng."
+                    };
+                }
+
+                bool isOneWay = ticket.TicketTypeId == 1;
+
+                // Validate theo hướng đi
+                if (isOneWay)
+                {
+                    if (!request.isOut)
+                    {
+                        // Check-in: Vé phải UnUsed & TerminalId khớp điểm xuất phát
+                        if (ticket.Status != TicketStatus.UnUsed)
+                            return new QRScanResponse { Message = "Vé đã được sử dụng hoặc không hợp lệ để vào cổng." };
+
+                        if (request.TerminalId != ticket.TrainRoute.StartTerminal)
+                            return new QRScanResponse { Message = "Bạn không ở đúng điểm bắt đầu để sử dụng vé." };
+                    }
+                    else
+                    {
+                        // Check-out: Vé phải InUse & TerminalId khớp điểm đến
+                        if (ticket.Status != TicketStatus.InUse)
+                            return new QRScanResponse { Message = "Vé chưa được sử dụng để vào cổng, không thể ra." };
+
+                        if (request.TerminalId != ticket.TrainRoute.EndTerminal)
+                            return new QRScanResponse { Message = "Bạn không ở đúng điểm đến để kết thúc hành trình." };
+                    }
+                }
+                else
+                {
+                    if (!request.isOut)
+                    {
+                        // Check-in: Vé phải UnUsed
+                        if (ticket.Status != TicketStatus.UnUsed)
+                            return new QRScanResponse { Message = "Vé đã được sử dụng hoặc không hợp lệ để vào cổng." };
+                    }
+                    else
+                    {
+                        // Check-out: Vé phải InUse
+                        if (ticket.Status != TicketStatus.InUse)
+                            return new QRScanResponse { Message = "Vé chưa được sử dụng để vào cổng, không thể ra." };
+                    }
+                }
+
+                // Update trạng thái
+                if (!request.isOut)
+                {
+                    ticket.Status = TicketStatus.InUse;
+                }
+                else
+                {
+                    ticket.Status = isOneWay ? TicketStatus.Disabled : TicketStatus.UnUsed;
+                }
+
+                ticket.LastUpdatedTime = DateTime.UtcNow;
+                await _ticketRepo.UpdateAsync(ticket);
+                await _unitOfWork.SaveAsync();
+
+                return new QRScanResponse
+                {
+                    NumberOfTicket = ticket.NumberOfTicket ?? 0,
+                    Message = "Quét mã thành công."
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during QR scan: {ex.Message}");
+                return new QRScanResponse { Message = "Đã xảy ra lỗi khi quét mã." };
             }
         }
     }

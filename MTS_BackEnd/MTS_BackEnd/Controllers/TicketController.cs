@@ -161,5 +161,22 @@ namespace MTS.BackEnd.Controllers
             return Ok(new { qrToken = token });
         }
 
+        [HttpPost("QRScan")]
+        public async Task<IActionResult> QRScan([FromBody] QRScanRequest request)
+        {
+            if (_serviceProviders?.TicketService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+
+            var result = await _serviceProviders.TicketService.QRScan(request);
+
+            if (result.NumberOfTicket == 0)
+            {
+                return BadRequest(result);
+            }
+
+            return Ok(result);
+        }
     }
 }
