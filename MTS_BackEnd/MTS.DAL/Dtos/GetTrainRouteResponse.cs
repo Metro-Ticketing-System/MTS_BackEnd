@@ -12,5 +12,7 @@ namespace MTS.DAL.Dtos
         public decimal Price { get; set; }
         public int StartTerminal { get; set; }
         public int EndTerminal { get; set; }
+        public string StartTerminalName { get; set; }
+        public string EndTerminalName { get; set; }
     }
 }

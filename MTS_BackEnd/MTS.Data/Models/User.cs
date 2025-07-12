@@ -29,7 +29,7 @@ namespace MTS.Data.Models
 		public virtual Role Role { get; set; } = null!;
 		public virtual Wallet Wallet { get; set; } = null!;
 
-        public string ExpoPushToken { get; set; } // tạo expo token để gửi push noti sau khi scan vé
+        public string ExpoPushToken { get; set; } = string.Empty; // tạo expo token để gửi push noti sau khi scan vé
 
 
         // Navigation property

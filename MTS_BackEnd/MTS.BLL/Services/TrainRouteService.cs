@@ -27,7 +27,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var route = await _trainRouteRepo.GetByPropertyAsync(t => t.StartTerminal == request.StartTerminal && t.EndTerminal == request.EndTerminal);
+                var route = await _trainRouteRepo.GetByPropertyAsync(t => t.StartTerminal == request.StartTerminal && t.EndTerminal == request.EndTerminal, includeProperties: "StartTerminalNavigation, EndTerminalNavigation");
                 if(route == null)
                 {
                     Console.WriteLine();
@@ -39,6 +39,8 @@ namespace MTS.BLL.Services
                     Price = route.Price,
                     StartTerminal = route.StartTerminal,
                     EndTerminal = route.EndTerminal,
+                    StartTerminalName = route.StartTerminalNavigation.Name,
+                    EndTerminalName = route.EndTerminalNavigation.Name
                 };
                 return result;
             }
