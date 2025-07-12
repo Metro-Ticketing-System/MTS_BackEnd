@@ -35,6 +35,7 @@ namespace MTS.BLL.Services
                 }    
                 var result = new GetTrainRouteResponse() 
                 { 
+                    TrainRouteId = route.Id,
                     Price = route.Price,
                     StartTerminal = route.StartTerminal,
                     EndTerminal = route.EndTerminal,

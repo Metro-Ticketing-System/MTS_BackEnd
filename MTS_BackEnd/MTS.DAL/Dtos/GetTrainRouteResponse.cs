@@ -8,6 +8,7 @@ namespace MTS.DAL.Dtos
 {
     public class GetTrainRouteResponse
     {
+        public int TrainRouteId { get; set; }
         public decimal Price { get; set; }
         public int StartTerminal { get; set; }
         public int EndTerminal { get; set; }
