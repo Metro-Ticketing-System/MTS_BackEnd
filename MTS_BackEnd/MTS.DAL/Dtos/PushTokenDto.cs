@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 namespace MTS.DAL.Dtos
 {
-    public class QRScanResponse
+    public class PushTokenDto
     {
-        public int NumberOfTicket { get; set; } = 0;
-        public string Message { get; set; }
         public Guid UserId { get; set; }
-        public int TicketId { get; set; }
+        public string ExpoPushToken { get; set; }
     }
+
+
 }

@@ -4,11 +4,9 @@ using MTS.DAL.Dtos;
 using MTS.DAL.Repositories;
 using MTS.Data.Enums;
 using MTS.Data.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace MTS.BLL.Services
 {
@@ -24,9 +22,11 @@ namespace MTS.BLL.Services
         Task<CreateTicketResponseDto> ActiveTicket(int id);
 		Task<string> GenerateQRToken(Guid userId, int ticketId);
 		Task<QRScanResponse> QRScan(QRScanRequest request);
+        Task SendPushNotification(Guid userId, int ticketId);
+        Task SendExpoPushAsync(string expoPushToken, string title, string body, object data = null);
     }
 
-	public class TicketService : ITicketService
+    public class TicketService : ITicketService
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private IGenericRepository<Ticket> _ticketRepo;
@@ -404,6 +404,8 @@ namespace MTS.BLL.Services
 
                 return new QRScanResponse
                 {
+                    UserId = ticket.PassengerId,
+                    TicketId = ticket.Id,
                     NumberOfTicket = ticket.NumberOfTicket ?? 0,
                     Message = "Quét mã thành công."
                 };
@@ -412,6 +414,41 @@ namespace MTS.BLL.Services
             {
                 Console.WriteLine($"Error during QR scan: {ex.Message}");
                 return new QRScanResponse { Message = "Đã xảy ra lỗi khi quét mã." };
+            }
+        }
+
+        public async Task SendPushNotification(Guid userId, int ticketId)
+        {
+            var user = await _unitOfWork.GetRepository<User>().GetByPropertyAsync(u => u.Id == userId);
+            
+            if (!string.IsNullOrEmpty(user.ExpoPushToken))
+            {
+                await SendExpoPushAsync(user.ExpoPushToken, "Quét vé thành công", $"Vé {ticketId} đã được quét", new { ticketId });
+            }
+        }
+
+        public async Task SendExpoPushAsync(string expoPushToken, string title, string body, object data = null)
+        {
+            var message = new
+            {
+                to = expoPushToken,
+                title,
+                body,
+                data,
+                sound = "default"
+            };
+            var payload = JsonSerializer.Serialize(message);
+
+            using var http = new HttpClient { BaseAddress = new Uri("https://exp.host") };
+            http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            var response = await http.PostAsync("/--/api/v2/push/send", content);
+
+            var respBody = await response.Content.ReadAsStringAsync();
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.Error.WriteLine($"Push failed: {respBody}");
             }
         }
     }

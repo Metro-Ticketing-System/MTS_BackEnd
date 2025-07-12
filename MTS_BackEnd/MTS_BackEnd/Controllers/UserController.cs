@@ -231,5 +231,23 @@ namespace MTS.BackEnd.Controllers
 			if (userAccounts == null || !userAccounts.Any()) return NotFound("No user accounts found!");
 			return Ok(userAccounts);
 		}
-	}
+
+        [HttpPost("SavePushToken")]
+        public async Task<IActionResult> SavePushToken([FromBody] PushTokenDto pushTokenDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var success = await _serviceProviders.UserService.SavePushToken(pushTokenDto);
+
+            if (!success)
+            {
+                return BadRequest(new { Message = "Failed to save push token." });
+            }
+
+            return Ok(new { Message = "Push token saved successfully." });
+        }
+    }
 }

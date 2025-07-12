@@ -175,7 +175,8 @@ namespace MTS.BackEnd.Controllers
             {
                 return BadRequest(result);
             }
-
+            // Gửi push notification tới user
+            await _serviceProviders.TicketService.SendPushNotification(result.UserId, result.TicketId);
             return Ok(result);
         }
     }
