@@ -19,6 +19,7 @@ namespace MTS.BLL.Services
 		}
 		public string CreatePaymentUrl(PaymentInformationModel model, HttpContext context, string? orderPrefix)
 		{
+			if (model.Amount == null || model.Amount == 0) { return null; }
 			var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]!);
 			var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
 			var pay = new VnPayLibrary();

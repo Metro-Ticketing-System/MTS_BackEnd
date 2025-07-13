@@ -23,7 +23,7 @@ namespace MTS.BLL.Services
 		Task<string> GenerateQRToken(Guid userId, int ticketId);
 		Task<QRScanResponse> QRScan(QRScanRequest request);
         Task SendPushNotification(Guid userId, int ticketId);
-        Task SendExpoPushAsync(string expoPushToken, string title, string body, object data = null);
+        Task SendExpoPushAsync(string expoPushToken, string title, string body, object? data = null);
     }
 
     public class TicketService : ITicketService
@@ -52,7 +52,7 @@ namespace MTS.BLL.Services
 					TicketTypeId = createTicketRequestDto.TicketTypeId,
 					TotalAmount = createTicketRequestDto.TotalAmount,
 					ValidTo = DateTime.UtcNow.AddDays(1),
-					TrainRouteId = createTicketRequestDto.TrainRouteId,
+					TrainRouteId = createTicketRequestDto.TrainRouteId ?? null,
 					Status = Data.Enums.TicketStatus.UnUsed,
 					NumberOfTicket = createTicketRequestDto.NumberOfTicket,
 				};
@@ -110,14 +110,14 @@ namespace MTS.BLL.Services
                     TotalAmount = ticket.TotalAmount,
                     ValidTo = ticket.ValidTo,
                     PurchaseTime = ticket.PurchaseTime,
-                    TrainRouteId = ticket.TrainRouteId,
-                    TrainRoutePrice = ticket.TrainRoute?.Price,
-                    StartTerminal = ticket.TrainRoute?.StartTerminal,
-                    EndTerminal = ticket.TrainRoute?.EndTerminal,
+                    TrainRouteId = ticket.TrainRouteId ?? 0,
+                    TrainRoutePrice = ticket.TrainRoute?.Price ?? 0m,
+                    StartTerminal = ticket.TrainRoute?.StartTerminal ?? null,
+                    EndTerminal = ticket.TrainRoute?.EndTerminal ?? null,
                     QRCode = ticket.QRCode,
                     Status = ticket.Status,
                     NumberOfTicket = ticket.NumberOfTicket,
-                    isPaid = ticket.isPaid,
+                    IsPaid = ticket.isPaid,
                     TxnRef = ticket.TxnRef,
                     VnPayTransactionDate = ticket.VnPayTransactionDate,
                     VnPayTransactionNo = ticket.VnPayTransactionNo
@@ -226,14 +226,14 @@ namespace MTS.BLL.Services
 					TotalAmount = t.TotalAmount,
 					ValidTo = t.ValidTo,
 					PurchaseTime = t.PurchaseTime,
-					TrainRouteId = t.TrainRouteId,
-					TrainRoutePrice = t.TrainRoute.Price,
-					StartTerminal = t.TrainRoute.StartTerminal,
-					EndTerminal = t.TrainRoute.EndTerminal,
-					QRCode = t.QRCode,
+					TrainRouteId = t.TrainRouteId ?? 0,
+                    TrainRoutePrice = t.TrainRoute?.Price ?? 0m,
+                    StartTerminal = t.TrainRoute?.StartTerminal ?? null,
+                    EndTerminal = t.TrainRoute?.EndTerminal ?? null,
+                    QRCode = t.QRCode,
 					Status = t.Status,
-					NumberOfTicket = t.NumberOfTicket,
-					isPaid = t.isPaid,
+					NumberOfTicket = t.NumberOfTicket ?? 0,
+					IsPaid = t.isPaid,
 					TxnRef = t.TxnRef,
 					VnPayTransactionDate = t.VnPayTransactionDate,
 					 VnPayTransactionNo = t.VnPayTransactionNo
@@ -427,7 +427,7 @@ namespace MTS.BLL.Services
             }
         }
 
-        public async Task SendExpoPushAsync(string expoPushToken, string title, string body, object data = null)
+        public async Task SendExpoPushAsync(string expoPushToken, string title, string body, object? data = null)
         {
             var message = new
             {

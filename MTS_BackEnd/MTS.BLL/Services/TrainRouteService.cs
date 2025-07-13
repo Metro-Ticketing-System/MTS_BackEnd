@@ -135,6 +135,7 @@ namespace MTS.BLL.Services
             try
             {
                 var tr = await _trainRouteRepo.GetByPropertyAsync(tr => tr.Id == id);
+                if (tr == null) { return false; }
                 tr.IsDeleted = true;
                 await _trainRouteRepo.UpdateAsync(tr);
                 await _unitOfWork.SaveAsync();

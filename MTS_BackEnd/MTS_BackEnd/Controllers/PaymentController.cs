@@ -68,7 +68,7 @@ namespace MTS.BackEnd.Controllers
 				
 
 			ticket.Status = Data.Enums.TicketStatus.UnUsed;
-			ticket.isPaid = true;
+			ticket.IsPaid = true;
 			ticket.QRCode = _qRTokenGeneratorService.GenerateQRToken(ticket.TicketId, ticket.PassengerId);
 			ticket.PurchaseTime = DateTime.UtcNow;
 
@@ -90,7 +90,7 @@ namespace MTS.BackEnd.Controllers
                 QRCode = ticket.QRCode,
                 Status = ticket.Status,
                 NumberOfTicket = ticket.NumberOfTicket,
-                isPaid = ticket.isPaid,
+                isPaid = ticket.IsPaid,
                 TxnRef = ticket.TxnRef,
                 VnPayTransactionDate = ticket.VnPayTransactionDate,
                 VnPayTransactionNo = ticket.VnPayTransactionNo

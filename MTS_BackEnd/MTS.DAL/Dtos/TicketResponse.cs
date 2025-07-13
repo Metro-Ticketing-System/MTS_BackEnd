@@ -7,9 +7,9 @@ namespace MTS.DAL.Dtos
         public int TicketId { get; set; }
         public Guid PassengerId { get; set; } // FK to User
         public string? PassengerName { get; set; }
-        public string Email { get; set; }
+        public string? Email { get; set; }
         public int TicketTypeId { get; set; } // FK to TicketType
-        public string TicketTypeName { get; set; }
+        public string? TicketTypeName { get; set; }
         public decimal? TotalAmount { get; set; }
         public DateTime ValidTo { get; set; }
         public DateTime? PurchaseTime { get; set; }
@@ -20,7 +20,7 @@ namespace MTS.DAL.Dtos
         public string? QRCode { get; set; }
         public TicketStatus Status { get; set; }
         public int? NumberOfTicket { get; set; }
-        public bool isPaid { get; set; }
+        public bool IsPaid { get; set; }
         public string? TxnRef { get; set; }
         public string? VnPayTransactionNo { get; set; }
         public string? VnPayTransactionDate { get; set; }

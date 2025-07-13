@@ -30,11 +30,7 @@ namespace MTS.BLL.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly JWTSettings _jwtSettings;
         private IGenericRepository<User> _userRepo;
-        public UserService()
-        {
-
-        }
-
+        
         public UserService(IUnitOfWork unitOfWork, JWTSettings jwtSettings)
         {
             _unitOfWork = unitOfWork;
@@ -134,6 +130,7 @@ namespace MTS.BLL.Services
             try
             {
                 var account = await _userRepo.GetByPropertyAsync(u => u.UserName == loginRequest.UserName && u.IsActive);
+                if (account == null) return null;
                 var checkPassword = VerifyPassword(account, loginRequest.Password);
                 if (account == null || !checkPassword) return null;
                 LoginResponseModelDto token = await Authentication.CreateToken(account!, account.RoleId!, _jwtSettings);

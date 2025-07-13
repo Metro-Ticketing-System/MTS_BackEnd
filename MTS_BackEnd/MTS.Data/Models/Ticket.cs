@@ -23,7 +23,7 @@ namespace MTS.Data.Models
 
 		// Navigation properties
 		public TicketType TicketType { get; set; }
-        public TrainRoute TrainRoute { get; set; }
+        public TrainRoute? TrainRoute { get; set; }
         public User Passenger { get; set; }
 
     }
