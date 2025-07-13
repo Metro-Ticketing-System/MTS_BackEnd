@@ -24,14 +24,14 @@ namespace MTS.BackEnd.Controllers
 			var userId = User.FindFirstValue("id");
 			if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-			var success = await _serviceProviders.RefundService.CreateRefundRequestAsync(Guid.Parse(userId), requestDto);
+			var (success, message) = await _serviceProviders.RefundService.CreateRefundRequestAsync(Guid.Parse(userId), requestDto);
 
 			if (!success)
 			{
-				return BadRequest("Could not create refund request. The ticket may not be eligible for a refund.");
+				return BadRequest(message);
 			}
 
-			return Ok("Refund request submitted successfully.");
+			return Ok(message);
 		}
 
 		[HttpGet("pending-requests")]
@@ -49,14 +49,14 @@ namespace MTS.BackEnd.Controllers
 			var adminId = User.FindFirstValue("id");
 			if (string.IsNullOrEmpty(adminId)) return Unauthorized();
 
-			var success = await _serviceProviders.RefundService.ProcessRefundRequestAsync(requestId, Guid.Parse(adminId), requestDto);
+			var (success, message) = await _serviceProviders.RefundService.ProcessRefundRequestAsync(requestId, Guid.Parse(adminId), requestDto);
 
-			if (string.IsNullOrEmpty(success))
+			if (!success)
 			{
-				return BadRequest("Failed to process the refund request. The request may have already been processed or an error occurred.");
+				return BadRequest(message);
 			}
 
-			return Ok("Refund request processed successfully.");
+			return Ok(message);
 		}
 	}
 }
