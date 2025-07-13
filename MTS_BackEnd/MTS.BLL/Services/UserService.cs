@@ -30,13 +30,15 @@ namespace MTS.BLL.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly JWTSettings _jwtSettings;
         private readonly IWalletService _walletService;
+        private readonly IEmailValidationService _emailValidationService;
         private IGenericRepository<User> _userRepo;
         
-        public UserService(IUnitOfWork unitOfWork, JWTSettings jwtSettings, IWalletService walletService)
+        public UserService(IUnitOfWork unitOfWork, JWTSettings jwtSettings, IWalletService walletService, IEmailValidationService emailValidationService)
         {
             _unitOfWork = unitOfWork;
             _jwtSettings = jwtSettings;
             _walletService = walletService;
+            _emailValidationService = emailValidationService;
             _userRepo = _unitOfWork.GetRepository<User>();
         }
 
@@ -149,6 +151,12 @@ namespace MTS.BLL.Services
         {
             try
             {
+                var isEmailValid = await _emailValidationService.IsEmailValidAsync(registerRequest.Email);
+                if (!isEmailValid)
+                {
+                    return new RegisterResultDto { IsSuccess = false }; // Consider adding a specific error message
+                }
+
                 var userByUsername = await _userRepo.GetByPropertyAsync(u => u.UserName == registerRequest.UserName);
                 var userByEmail = await _userRepo.GetByPropertyAsync(u => u.Email == registerRequest.Email);
                 if (userByUsername != null || userByEmail != null)

@@ -31,7 +31,7 @@ namespace MTS.BackEnd.Controllers
 
 			var registerResult = await _serviceProviders.UserService.Register(request);
 			if (!registerResult.IsSuccess)
-				return Conflict("User already exists!");
+				return Conflict("User already exists or email not exist!");
 
 			var verificationLink = $"https://HCMCMTS.com/user/verify-email?token={registerResult.VerificationToken}&email={Uri.EscapeDataString(registerResult.Email!)}";
 
