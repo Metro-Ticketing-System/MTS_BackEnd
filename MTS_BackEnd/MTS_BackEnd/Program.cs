@@ -8,6 +8,7 @@ using MTS.BackEnd.Infrastructure;
 using MTS.BLL;
 using MTS.BLL.Services;
 using MTS.BLL.Services.QRService;
+using MTS.BLL.Services.VNPayService;
 using MTS.DAL.Repositories;
 using MTS.Data;
 using MTS.Data.Base;
@@ -145,7 +146,7 @@ builder.Services.AddScoped<IVNPayRefundGatewayService, VNPayRefundGatewayService
 builder.Services.AddScoped<ITrainRouteService, TrainRouteService>();
 builder.Services.AddScoped<IBusRouteService, BusRouteService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
-
+builder.Services.AddHttpClient<IEmailValidationService, EmailValidationService>();
 
 
 var app = builder.Build();

@@ -21,7 +21,7 @@ namespace MTS.BLL
         ITrainRouteService TrainRouteService { get; }
         ITerminalService TerminalService { get; }
         ITicketTypeService TicketTypeService { get; }
-
+        IEmailValidationService EmailValidationService { get; }
     }
     public class ServiceProviders : IServiceProviders
     {
@@ -32,7 +32,8 @@ namespace MTS.BLL
         private readonly QRTokenGeneratorService _qrTokenGeneratorService;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IVNPayRefundGatewayService _refundGatewayService;
-        public ServiceProviders(IUnitOfWork unitOfWork, JWTSettings jwtSettings, IConfiguration configuration, ISupabaseFileService supabaseFileService, QRTokenGeneratorService qrTokenGeneratorService, IHttpClientFactory httpClientFactory)
+        private readonly IEmailValidationService _emailValidationService;
+        public ServiceProviders(IUnitOfWork unitOfWork, JWTSettings jwtSettings, IConfiguration configuration, ISupabaseFileService supabaseFileService, QRTokenGeneratorService qrTokenGeneratorService, IHttpClientFactory httpClientFactory, IEmailValidationService emailValidationService)
         {
             _unitOfWork = unitOfWork;
             _jwtSettings = jwtSettings;
@@ -41,9 +42,10 @@ namespace MTS.BLL
             _qrTokenGeneratorService = qrTokenGeneratorService;
             _httpClientFactory = httpClientFactory;
             _refundGatewayService = new VNPayRefundGatewayService(_configuration, _httpClientFactory);
+            _emailValidationService = emailValidationService;
         }
 
-        public IUserService UserService => new UserService(_unitOfWork, _jwtSettings, WalletService);
+        public IUserService UserService => new UserService(_unitOfWork, _jwtSettings, WalletService, _emailValidationService);
 
         public ITicketService TicketService => new TicketService(_unitOfWork, _qrTokenGeneratorService);
 
@@ -61,6 +63,7 @@ namespace MTS.BLL
         public ITerminalService TerminalService => new TerminalService(_unitOfWork);
 
         public ITicketTypeService TicketTypeService => new TicketTypeService(_unitOfWork);
+        public IEmailValidationService EmailValidationService => _emailValidationService;
     }
 }
 
