@@ -32,25 +32,6 @@ namespace MTS.BackEnd.Controllers
 			return Ok(wallet);
 		}
 
-		[HttpPost("register-for-e-wallet")]
-		public async Task<IActionResult> RegisterWallet()
-		{
-			var userId = User.FindFirstValue("id");
-			if (string.IsNullOrEmpty(userId))
-			{
-				return Unauthorized();
-			}
-
-			var success = await _serviceProviders.WalletService.CreateWalletAsync(Guid.Parse(userId));
-
-			if (!success)
-			{
-				return Conflict(new { message = "A wallet already exists for this user or the creation failed." });
-			}
-
-			return CreatedAtAction(nameof(GetMyWallet), null, new { message = "Wallet registered successfully." });
-		}
-
 		[HttpPost("create-topup-url")]
 		public async Task<IActionResult> CreateTopUpUrl([FromBody] TopUpRequestDto topUpRequest)
 		{

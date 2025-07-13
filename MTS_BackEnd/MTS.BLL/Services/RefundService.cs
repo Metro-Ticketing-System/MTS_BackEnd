@@ -140,7 +140,7 @@ namespace MTS.BLL.Services
 				else
 				{
 					refundRequest.Status = ApplicationStatus.Rejected;
-					refundRequest.AdminNotes += " | Wallet refund failed.";
+					refundRequest.AdminNotes += " | Wallet refund failed (unknown error).";
 				}
 			}
 

@@ -43,7 +43,7 @@ namespace MTS.BLL
             _refundGatewayService = new VNPayRefundGatewayService(_configuration, _httpClientFactory);
         }
 
-        public IUserService UserService => new UserService(_unitOfWork, _jwtSettings);
+        public IUserService UserService => new UserService(_unitOfWork, _jwtSettings, WalletService);
 
         public ITicketService TicketService => new TicketService(_unitOfWork, _qrTokenGeneratorService);
 

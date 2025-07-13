@@ -9,8 +9,8 @@ namespace MTS.Data.Models
 		[ForeignKey("User")]
 		public Guid UserId { get; set; }
 		public decimal Balance { get; set; } = 0;
-		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-		public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+		public DateTime CreatedAt { get; set; }
+		public DateTime? UpdatedAt { get; set; }
 		public virtual User User { get; set; } = null!;
 		public virtual ICollection<WalletTransaction> Transactions { get; set; } = new List<WalletTransaction>();
 	}
