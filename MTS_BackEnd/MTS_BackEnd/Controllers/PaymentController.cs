@@ -43,13 +43,25 @@ namespace MTS.BackEnd.Controllers
 			if (response == null || response.OrderId == null)
 			{
 				return Redirect("metroapp://payment-result");
-			}	
-			if (response.VnPayResponseCode != "00")
+			}
+
+			bool isSuccess = response.VnPayResponseCode == "00";
+
+			if (!isSuccess)
 			{
-				if (TryParseTicketId(response.OrderId, out int ticketId)) await _serviceProviders.TicketService.DeleteTicket(ticketId);
+				if (TryParseTicketId(response.OrderId, out int ticketId))
+				{
+					await _serviceProviders.TicketService.DeleteTicket(ticketId);
+				}
+
+				if (response.OrderId.StartsWith("WALLET_"))
+				{
+					await HandleWalletTopUp(response, isSuccess);
+				}
+
                 return Redirect($"metroapp://payment-result?status={response.VnPayResponseCode}&orderId={response.OrderId}");
             }
-			if (response.OrderId.StartsWith("WALLET_")) return await HandleWalletTopUp(response);
+			if (response.OrderId.StartsWith("WALLET_")) return await HandleWalletTopUp(response, isSuccess);
 			else return await HandleTicketPurchase(response);
 		}
 
@@ -104,13 +116,13 @@ namespace MTS.BackEnd.Controllers
             return Redirect($"metroapp://payment-result?status=01&orderId={response.OrderId}");
         }
 
-		private async Task<IActionResult> HandleWalletTopUp(PaymentResponseModel response)
+		private async Task<IActionResult> HandleWalletTopUp(PaymentResponseModel response, bool isSuccess)
 		{
 			if (!decimal.TryParse(response.Amount, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal amountValue))
 				return Content("Payment failed: Invalid amount.");
 			var actualAmount = amountValue / 100;
-			var success = await _serviceProviders.WalletService.ProcessTopUpCallbackAsync(response.OrderId, actualAmount);
-			if (success) return Content("Wallet top-up successful!");
+			var success = await _serviceProviders.WalletService.ProcessTopUpCallbackAsync(response.OrderId, actualAmount, isSuccess);
+			if (success && isSuccess) return Content("Wallet top-up successful!");
 			return Content("Wallet top-up failed.");
 		}
 

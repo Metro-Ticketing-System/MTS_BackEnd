@@ -284,7 +284,7 @@ namespace MTS.Data
                 PasswordHash = "AQAAAAIAAYagAAAAENXGvXsCPKjc3lZglO1W7RUegv04aTnUvanOmCZwnJffvIlARmbRjHMJ155NXj4QWg==",
                 //SecurityStamp = "STATIC-SECURITY-STAMP-P1",
                 //ConcurrencyStamp = "STATIC-CONCURRENCY-STAMP-P1"
-                RoleId = rolePassenger.Id
+                RoleId = rolePassenger.Id,
             };
 
             var passengerUser2 = new User
@@ -307,10 +307,25 @@ namespace MTS.Data
             };
 
             modelBuilder.Entity<User>().HasData(adminUser, staffUser1, staffUser2, passengerUser1, passengerUser2);
-            #endregion
+			#endregion
 
-            #region TicketType
-            var ticketType1 = new TicketType
+			#region Wallet
+            var wallet1 = new Wallet
+            {
+                UserId = Guid.Parse("44444444-4444-4444-4444-444444444444"), // Maint
+                Balance = 0m, 
+                CreatedAt = DateTime.Parse("2025-06-28")
+			};
+            var wallet2 = new Wallet
+            {
+                UserId = Guid.Parse("55555555-5555-5555-5555-555555555555"), // Anhtd
+                Balance = 0m, 
+                CreatedAt = DateTime.Parse("2025-06-28")
+			};
+            modelBuilder.Entity<Wallet>().HasData(wallet1, wallet2);
+			#endregion
+			#region TicketType
+			var ticketType1 = new TicketType
             {
                 Id = 1,
                 TicketTypeName = "SingleRide",

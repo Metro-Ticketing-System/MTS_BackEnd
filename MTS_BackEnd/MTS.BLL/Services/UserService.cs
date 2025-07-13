@@ -29,12 +29,14 @@ namespace MTS.BLL.Services
         private readonly PasswordHasher<User> _passwordHasher = new PasswordHasher<User>();
         private readonly IUnitOfWork _unitOfWork;
         private readonly JWTSettings _jwtSettings;
+        private readonly IWalletService _walletService;
         private IGenericRepository<User> _userRepo;
         
-        public UserService(IUnitOfWork unitOfWork, JWTSettings jwtSettings)
+        public UserService(IUnitOfWork unitOfWork, JWTSettings jwtSettings, IWalletService walletService)
         {
             _unitOfWork = unitOfWork;
             _jwtSettings = jwtSettings;
+            _walletService = walletService;
             _userRepo = _unitOfWork.GetRepository<User>();
         }
 
@@ -174,8 +176,9 @@ namespace MTS.BLL.Services
                 };
 
                 await _userRepo.AddAsync(user);
+                await _walletService.CreateWalletAsync(user.Id);
                 var succeedCount = await _unitOfWork.SaveAsync();
-                if (succeedCount > 0)
+                if (succeedCount > 1)
                 {
                     return new RegisterResultDto
                     {

@@ -9,8 +9,8 @@ namespace MTS.BLL.Services
 	public interface IWalletService
 	{
 		Task<bool> CreateWalletAsync(Guid userId);
-		Task<WalletDto> GetWalletByUserIdAsync(Guid userId);
-		Task<bool> ProcessTopUpCallbackAsync(string orderId, decimal amount);
+		Task<WalletDto?> GetWalletByUserIdAsync(Guid userId);
+		Task<bool> ProcessTopUpCallbackAsync(string orderId, decimal amount, bool isSuccess);
 		Task<bool> PurchaseTicketWithWalletAsync(Guid userId, int ticketId);
 		Task<bool> AddToWalletAsync(Guid userId, decimal amount, TransactionType type, string description);
 	}
@@ -40,14 +40,13 @@ namespace MTS.BLL.Services
 				UserId = userId,
 				Balance = 0,
 				CreatedAt = DateTime.UtcNow,
-				UpdatedAt = DateTime.UtcNow
 			};
 
 			await _unitOfWork.GetRepository<Wallet>().AddAsync(newWallet);
-			return await _unitOfWork.SaveAsync() > 0;
+			return true;
 		}
 
-		public async Task<WalletDto> GetWalletByUserIdAsync(Guid userId)
+		public async Task<WalletDto?> GetWalletByUserIdAsync(Guid userId)
 		{
 			var wallet = await _unitOfWork.GetRepository<Wallet>()
 				.GetByPropertyAsync(
@@ -76,7 +75,7 @@ namespace MTS.BLL.Services
 			};
 		}
 
-		public async Task<bool> ProcessTopUpCallbackAsync(string orderId, decimal amount)
+		public async Task<bool> ProcessTopUpCallbackAsync(string orderId, decimal amount, bool isSuccess)
 		{
 			var parts = orderId.Split('_');
 			if (parts.Length < 2) return false;
@@ -84,32 +83,46 @@ namespace MTS.BLL.Services
 			var userIdString = parts[1];
 			if (!Guid.TryParse(userIdString, out Guid userId)) return false;
 
-			return await AddToWalletAsync(userId, amount, TransactionType.TopUp, $"Top-up via VNPay. Order ID: {orderId}");
+			if (isSuccess)
+			{
+				//var success = await AddToWalletAsync(userId, amount, TransactionType.TopUp, $"Top-up via VNPay. Order ID: {orderId}");
+				//if (!success) return false;
+				await AddToWalletAsync(userId, amount, TransactionType.TopUp, $"Top-up via VNPay. Order ID: {orderId}");
+			}
+			else
+			{
+				await CreateTransactionAsync(userId, amount, TransactionType.TopUp, TransactionStatus.Failed, $"Failed Top-up via VNPay. Order ID: {orderId}");
+			}
+			
+			return await _unitOfWork.SaveAsync() > 0;
 		}
 
 		public async Task<bool> AddToWalletAsync(Guid userId, decimal amount, TransactionType type, string description)
 		{
 			var wallet = await _unitOfWork.GetRepository<Wallet>().GetByPropertyAsync(w => w.UserId == userId);
-			if (wallet == null) return false;
+			//bool isNew = wallet == null;
+			//if (isNew)
+			//{
+			//	wallet = new Wallet
+			//	{
+			//		UserId = userId,
+			//		Balance = 0,
+			//		CreatedAt = DateTime.UtcNow,
+			//	};
+			//	await _unitOfWork.GetRepository<Wallet>().AddAsync(wallet);
+			//}
 
 			wallet.Balance += amount;
 			wallet.UpdatedAt = DateTime.UtcNow;
 
-			await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+			//if(!isNew)
+			//{
+				await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
+			//}
 
-			var transaction = new WalletTransaction
-			{
-				WalletId = wallet.UserId,
-				Amount = amount,
-				Type = type,
-				Status = TransactionStatus.Succeed,
-				Description = description,
-				CreatedAt = DateTime.UtcNow
-			};
-			await _unitOfWork.GetRepository<WalletTransaction>().AddAsync(transaction);
-
-			// Save changes for both Wallet and WalletTransaction
-			return await _unitOfWork.SaveAsync() > 1;
+			await CreateTransactionAsync(wallet.UserId, amount, type, TransactionStatus.Succeed, description);
+			
+			return true;
 		}
 
 		public async Task<bool> PurchaseTicketWithWalletAsync(Guid userId, int ticketId)
@@ -118,22 +131,18 @@ namespace MTS.BLL.Services
 			var ticket = await _unitOfWork.GetRepository<Ticket>().GetByPropertyAsync(t => t.Id == ticketId);
 
 			if (wallet == null || ticket == null || ticket.isPaid) return false;
-			if (wallet.Balance < ticket.TotalAmount) return false;
+			if (wallet.Balance < ticket.TotalAmount)
+			{
+				await CreateTransactionAsync(wallet.UserId, -ticket.TotalAmount, TransactionType.Purchase, TransactionStatus.Failed, $"Ticket Purchase ID: {ticket.Id} - Insufficient funds");
+				await _unitOfWork.SaveAsync();
+				return false;
+			}
 
 			wallet.Balance -= ticket.TotalAmount;
 			wallet.UpdatedAt = DateTime.UtcNow;
 			await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
 
-			var transaction = new WalletTransaction
-			{
-				WalletId = wallet.UserId,
-				Amount = -ticket.TotalAmount,
-				Type = TransactionType.Purchase,
-				Status = TransactionStatus.Succeed,
-				Description = $"Ticket Purchase ID: {ticket.Id}",
-				CreatedAt = DateTime.UtcNow
-			};
-			await _unitOfWork.GetRepository<WalletTransaction>().AddAsync(transaction);
+			await CreateTransactionAsync(wallet.UserId, -ticket.TotalAmount, TransactionType.Purchase, TransactionStatus.Succeed, $"Ticket Purchase ID: {ticket.Id}");
 
 			ticket.isPaid = true;
 			ticket.Status = TicketStatus.UnUsed;
@@ -142,6 +151,20 @@ namespace MTS.BLL.Services
 			await _unitOfWork.GetRepository<Ticket>().UpdateAsync(ticket);
 
 			return await _unitOfWork.SaveAsync() > 2;
+		}
+
+		private async Task CreateTransactionAsync(Guid userId, decimal amount, TransactionType type, TransactionStatus status, string description)
+		{
+			var transaction = new WalletTransaction
+			{
+				WalletId = userId,
+				Amount = amount,
+				Type = type,
+				Status = status,
+				Description = description,
+				CreatedAt = DateTime.UtcNow
+			};
+			await _unitOfWork.GetRepository<WalletTransaction>().AddAsync(transaction);
 		}
 	}
 }
