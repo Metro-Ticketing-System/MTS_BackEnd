@@ -287,6 +287,13 @@ namespace MTS.BLL.Services
                 {
                     return new CreateTicketResponseDto { IsSuccess = false };
                 }
+
+                bool isOneWay = ticket.TicketTypeId == 1;
+                if(isOneWay)
+                {
+                    ticket.ValidTo = DateTime.UtcNow.AddDays(1);
+                }    
+
                 ticket.Status = Data.Enums.TicketStatus.UnUsed;
                 await _ticketRepo.UpdateAsync(ticket);
                 var succeedCount = await _unitOfWork.SaveAsync();
@@ -398,6 +405,10 @@ namespace MTS.BLL.Services
                     ticket.Status = isOneWay ? TicketStatus.Disabled : TicketStatus.UnUsed;
                 }
 
+                if(isOneWay)
+                {
+                    ticket.ValidTo = DateTime.UtcNow.AddSeconds(1);
+                }
                 ticket.LastUpdatedTime = DateTime.UtcNow;
                 await _ticketRepo.UpdateAsync(ticket);
                 await _unitOfWork.SaveAsync();
