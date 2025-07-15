@@ -414,7 +414,7 @@ namespace MTS.BLL.Services
                     ticket.Status = isOneWay ? TicketStatus.Disabled : TicketStatus.UnUsed;
                 }
 
-                if(isOneWay)
+                if(isOneWay & request.isOut)
                 {
                     ticket.ValidTo = DateTime.UtcNow.AddSeconds(1);
                 }
