@@ -140,6 +140,7 @@ namespace MTS.BLL.Services
 				{
 					return new CreateTicketResponseDto { IsSuccess = false };
 				}
+                ticketModel.ValidTo = ticket.ValidTo;
 				ticketModel.Status = ticket.Status;
 				ticketModel.isPaid = ticket.isPaid;
 				ticketModel.QRCode = ticket.QRCode;
@@ -345,6 +346,14 @@ namespace MTS.BLL.Services
                 if (ticket == null || ticket.PassengerId != userId)
                 {
                     return new QRScanResponse { Message = "Không tìm thấy vé hoặc thông tin người dùng không khớp." };
+                }
+
+                if (ticket.isPaid == false)
+                {
+                    return new QRScanResponse
+                    {
+                        Message = "Vé chưa được thanh toán."
+                    };
                 }
 
                 if (ticket.ValidTo < DateTime.UtcNow)

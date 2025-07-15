@@ -83,6 +83,12 @@ namespace MTS.BackEnd.Controllers
 			ticket.IsPaid = true;
 			ticket.QRCode = _qRTokenGeneratorService.GenerateQRToken(ticket.TicketId, ticket.PassengerId);
 			ticket.PurchaseTime = DateTime.UtcNow;
+			ticket.ValidTo = DateTime.UtcNow.AddDays(1);
+
+			if(ticket.TicketTypeId == 3)
+			{
+				ticket.ValidTo = DateTime.UtcNow.AddMonths(1);
+			}	
 
 			// --- SAVE VNPay Details for Refund ---
 			ticket.TxnRef = response.OrderId; // Save the original merchant transaction reference
