@@ -24,6 +24,7 @@ namespace MTS.BLL.Services
 		Task<QRScanResponse> QRScan(QRScanRequest request);
         Task SendPushNotification(Guid userId, int ticketId);
         Task SendExpoPushAsync(string expoPushToken, string title, string body, object? data = null);
+        Task<TicketResponse?> CheckTicketExpire(int ticketId);
     }
 
     public class TicketService : ITicketService
@@ -356,7 +357,7 @@ namespace MTS.BLL.Services
                     };
                 }
 
-                if (ticket.ValidTo < DateTime.UtcNow)
+                if (ticket.ValidTo < DateTime.UtcNow && ticket.Status == TicketStatus.UnUsed)
                 {
                     return new QRScanResponse
                     {
@@ -469,6 +470,58 @@ namespace MTS.BLL.Services
             if (!response.IsSuccessStatusCode)
             {
                 Console.Error.WriteLine($"Push failed: {respBody}");
+            }
+        }
+
+        public async Task<TicketResponse?> CheckTicketExpire(int ticketId)
+        {
+            try
+            {
+                var ticket = await _ticketRepo.GetByPropertyAsync(t => t.Id == ticketId);
+                if (ticket == null)
+                {
+                    return null;
+                }
+
+                if (ticket.ValidTo < DateTime.UtcNow)
+                {
+                    ticket.Status = TicketStatus.Expired;
+                }
+
+                await _ticketRepo.UpdateAsync(ticket);
+                var succeedCount = await _unitOfWork.SaveAsync();
+                if (succeedCount > 0)
+                {
+                    return new TicketResponse
+                    {
+                        TicketId = ticket.Id,
+                        PassengerId = ticket.PassengerId,
+                        PassengerName = ticket.Passenger.FirstName + " " + ticket.Passenger.LastName,
+                        Email = ticket.Passenger.Email,
+                        TicketTypeId = ticket.TicketTypeId,
+                        TicketTypeName = ticket.TicketType.TicketTypeName,
+                        TotalAmount = ticket.TotalAmount,
+                        ValidTo = ticket.ValidTo,
+                        PurchaseTime = ticket.PurchaseTime,
+                        TrainRouteId = ticket.TrainRouteId ?? 0,
+                        TrainRoutePrice = ticket.TrainRoute?.Price ?? 0m,
+                        StartTerminal = ticket.TrainRoute?.StartTerminal ?? null,
+                        EndTerminal = ticket.TrainRoute?.EndTerminal ?? null,
+                        QRCode = ticket.QRCode,
+                        Status = ticket.Status,
+                        NumberOfTicket = ticket.NumberOfTicket,
+                        IsPaid = ticket.isPaid,
+                        TxnRef = ticket.TxnRef,
+                        VnPayTransactionDate = ticket.VnPayTransactionDate,
+                        VnPayTransactionNo = ticket.VnPayTransactionNo
+                    };
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
             }
         }
     }

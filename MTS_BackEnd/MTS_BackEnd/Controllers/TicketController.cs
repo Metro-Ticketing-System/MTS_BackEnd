@@ -179,5 +179,23 @@ namespace MTS.BackEnd.Controllers
             await _serviceProviders.TicketService.SendPushNotification(result.UserId, result.TicketId);
             return Ok(result);
         }
+
+        [HttpGet("CheckExpire/{ticketId}")]
+        public async Task<IActionResult> CheckTicketExpire(int ticketId)
+        {
+            if (_serviceProviders?.TicketService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+
+            var result = await _serviceProviders.TicketService.CheckTicketExpire(ticketId);
+
+            if (result == null)
+            {
+                return NotFound($"Ticket with ID {ticketId} not found or expired.");
+            }
+
+            return Ok(result);
+        }
     }
 }

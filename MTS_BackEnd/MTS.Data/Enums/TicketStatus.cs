@@ -5,6 +5,7 @@
         InUse,
         Disabled,
         UnUsed,
-		Refunded
+		Refunded,
+        Expired
 	}
 }
