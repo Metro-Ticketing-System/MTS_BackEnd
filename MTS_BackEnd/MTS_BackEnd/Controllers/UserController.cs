@@ -169,7 +169,7 @@ namespace MTS.BackEnd.Controllers
 			if (staffAccountDto == null) return BadRequest("Staff account data is required!");
 			var result = await _serviceProviders.UserService.CreateStaffAccount(staffAccountDto);
 			if (result < 0) return Conflict("User already exists!");
-			return CreatedAtAction(nameof(result), null, "Staff account created successfully!");
+			return Ok("Staff account created successfully!");
 		}
 
 		[Authorize]
