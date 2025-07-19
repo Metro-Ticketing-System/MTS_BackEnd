@@ -24,7 +24,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"https://api.apiverve.com/v1/emailvalidator?email={email}");
+				var response = await _httpClient.GetAsync($"https://api.apiverve.com/v1/emailvalidator?email={email}");
 
                 if (!response.IsSuccessStatusCode)
                 {
