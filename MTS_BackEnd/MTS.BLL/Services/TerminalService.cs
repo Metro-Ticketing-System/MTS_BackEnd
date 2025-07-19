@@ -9,6 +9,7 @@ namespace MTS.BLL.Services
         Task<List<GetBusRoutesResponse>> GetBusRoutes(int terminalId);
         Task<List<GetAllTerminalsResponse>> GetAllTerminals();
         Task<TerminalDto> GetTerminalById(int terminalId);
+        Task<TerminalDto> CreateTerminal(CreateTerminalRequest request);
     }
     public class TerminalService : ITerminalService
     {
@@ -20,6 +21,39 @@ namespace MTS.BLL.Services
             _unitOfWork = unitOfWork;
             _terminalRepo = _unitOfWork.GetRepository<Terminal>();
         }
+
+        public async Task<TerminalDto> CreateTerminal(CreateTerminalRequest request)
+        {
+            try
+            {
+                var terminal = new Terminal
+                {
+                    Name = request.Name,
+                    Location = request.Location,
+                    CreatedBy = request.UserId.ToString(),
+                    CreatedTime = DateTime.UtcNow,
+                    LastUpdatedTime = DateTime.UtcNow
+                };
+                await _terminalRepo.AddAsync(terminal);
+                var succeedCount = await _unitOfWork.SaveAsync();
+                if (succeedCount > 0)
+                {
+                    return new TerminalDto
+                    {
+                        Id = terminal.Id,
+                        Name = terminal.Name,
+                        Location = terminal.Location
+                    };
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
+            }
+        }
+
         public async Task<List<GetAllTerminalsResponse>> GetAllTerminals()
         {
             try

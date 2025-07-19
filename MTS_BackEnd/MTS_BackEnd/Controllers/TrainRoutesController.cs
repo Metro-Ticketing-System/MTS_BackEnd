@@ -15,7 +15,7 @@ namespace MTS.BackEnd.Controllers
             _serviceProviders = serviceProviders;
         }
 
-        [HttpPost("GetTrainRoute")]
+        [HttpGet("GetTrainRoute")]
         public async Task<IActionResult> GetTrainRoute([FromBody] GetTrainRouteRequest request)
         {
             if (_serviceProviders?.TrainRouteService == null)

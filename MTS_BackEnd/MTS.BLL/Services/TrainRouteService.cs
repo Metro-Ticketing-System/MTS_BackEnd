@@ -65,7 +65,7 @@ namespace MTS.BLL.Services
                 var trainRoute = new TrainRoute
                 {
                     CreatedTime = DateTime.Now,
-                    CreatedBy = request.PassengerId.ToString(),
+                    CreatedBy = request.UserId.ToString(),
                     LastUpdatedTime = DateTime.Now,
 
                     Price = request.Price,
