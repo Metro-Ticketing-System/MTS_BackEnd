@@ -124,7 +124,8 @@ namespace MTS.BLL.Services
 					AdminName = app.Admin?.LastName + " " + app.Admin?.FirstName,
 					UpdatedBy = app.UpdatedBy,
 					LastUpdatedTime = app.LastUpdatedTime,
-					Note = app.Note
+					Note = app.Note,
+					User = UserAccountDto.FromModelToDto(app.Passenger)
 
 				}).ToList();
 
@@ -147,7 +148,7 @@ namespace MTS.BLL.Services
 					Console.WriteLine("Priority application not found.");
 					return null;
 				}
-				
+
 				var applicationDto = new PriorityApplicationDto
 				{
 					Id = application.Id,
@@ -163,7 +164,8 @@ namespace MTS.BLL.Services
 					AdminName = application.Admin?.LastName + " " + application.Admin?.FirstName,
 					UpdatedBy = application.UpdatedBy,
 					LastUpdatedTime = application.LastUpdatedTime,
-					Note = application.Note
+					Note = application.Note,
+					User = UserAccountDto.FromModelToDto(application.Passenger)
 				};	
 
 				return applicationDto;

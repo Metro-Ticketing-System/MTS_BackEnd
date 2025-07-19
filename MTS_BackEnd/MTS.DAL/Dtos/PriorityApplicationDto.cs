@@ -18,5 +18,6 @@ namespace MTS.DAL.Dtos
 		public string? CreatedBy { get; set; }
 		public string? UpdatedBy { get; set; }
 		public string? Note { get; set; }
+		public UserAccountDto User { get; set; } = new UserAccountDto();
 	}
 }
