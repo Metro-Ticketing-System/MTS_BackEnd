@@ -10,6 +10,7 @@ namespace MTS.BLL.Services
         Task<CreateTrainRouteResponse> CreateTrainRoute(CreateTrainRouteRequest request);
         Task<CreateTrainRouteResponse> UpdateTrainRoute(TrainRouteDto request);
         Task<bool> DeleteTrainRoute(int id);
+        Task<List<GetTrainRouteResponse>> GetAllAsync();    
     }
     public class TrainRouteService : ITrainRouteService
     {
@@ -147,5 +148,23 @@ namespace MTS.BLL.Services
                 return false;
             }
         }
-    }
+
+		public async Task<List<GetTrainRouteResponse>> GetAllAsync()
+		{
+            var response = await _trainRouteRepo.GetAllByPropertyAsync(tr => !tr.IsDeleted, includeProperties: "StartTerminalNavigation, EndTerminalNavigation");
+            if (!response.Any())
+            {
+                return new List<GetTrainRouteResponse>();
+			}
+            return response.Select(tr => new GetTrainRouteResponse
+            {
+                TrainRouteId = tr.Id,
+                Price = tr.Price,
+                StartTerminal = tr.StartTerminal,
+                EndTerminal = tr.EndTerminal,
+                StartTerminalName = tr.StartTerminalNavigation.Name,
+                EndTerminalName = tr.EndTerminalNavigation.Name
+            }).ToList();
+		}
+	}
 }

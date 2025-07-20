@@ -80,5 +80,20 @@ namespace MTS.BackEnd.Controllers
 
             return Ok(new { Message = "Train route deleted successfully." });
         }
-    }
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllTrainRoutes()
+        {
+            if (_serviceProviders?.TrainRouteService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+            var result = await _serviceProviders.TrainRouteService.GetAllAsync();
+            if (result == null || !result.Any())
+            {
+                return NotFound("No train routes found.");
+            }
+            return Ok(result);
+		}
+	}
 }
