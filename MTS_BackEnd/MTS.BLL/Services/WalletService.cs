@@ -13,13 +13,13 @@ namespace MTS.BLL.Services
 		Task<bool> ProcessTopUpCallbackAsync(string orderId, decimal amount, bool isSuccess);
 		Task<bool> PurchaseTicketWithWalletAsync(Guid userId, int ticketId);
 		Task<bool> AddToWalletAsync(Guid userId, decimal amount, TransactionType type, string description);
+		Task<List<TransactionDto>> GetTransactionAsync(Guid userId);
 	}
 
 	public class WalletService : IWalletService
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		private readonly QRTokenGeneratorService _qrTokenGenerator;
-
 
 		public WalletService(IUnitOfWork unitOfWork, QRTokenGeneratorService qrTokenGenerator)
 		{
@@ -165,6 +165,24 @@ namespace MTS.BLL.Services
 				CreatedAt = DateTime.UtcNow
 			};
 			await _unitOfWork.GetRepository<WalletTransaction>().AddAsync(transaction);
+		}
+
+		public async Task<List<TransactionDto>> GetTransactionAsync(Guid userId)
+		{
+			var transactions = await _unitOfWork.GetRepository<WalletTransaction>().GetAllByPropertyAsync(u => u.WalletId == userId);
+			if (transactions == null || !transactions.Any())
+			{
+				return new List<TransactionDto>();
+			}
+			return transactions.Select(t => new TransactionDto
+			{
+				Id = t.Id,
+				Amount = t.Amount,
+				Type = t.Type,
+				Status = t.Status,
+				Description = t.Description,
+				CreatedAt = t.CreatedAt
+			}).ToList();
 		}
 	}
 }

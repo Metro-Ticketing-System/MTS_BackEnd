@@ -64,5 +64,18 @@ namespace MTS.BackEnd.Controllers
 
 			return Ok(new { TopUpUrl = url });
 		}
+
+		[HttpGet("transaction-history")]	
+		public async Task<IActionResult> GetTransactionHistory()
+		{
+			var userId = User.FindFirstValue("id");
+			if (string.IsNullOrEmpty(userId)) return Unauthorized("User not authenticated!");
+			var transactions = await _serviceProviders.WalletService.GetTransactionAsync(Guid.Parse(userId));
+			if (transactions == null || !transactions.Any())
+			{
+				return NotFound("No transaction history found for this user.");
+			}
+			return Ok(transactions);
+		}
 	}
 }

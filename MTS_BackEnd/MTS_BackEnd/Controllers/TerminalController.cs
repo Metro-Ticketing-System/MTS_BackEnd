@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
+using MTS.DAL.Dtos;
 
 namespace MTS.BackEnd.Controllers
 {
@@ -56,5 +57,24 @@ namespace MTS.BackEnd.Controllers
 
             return Ok(result);
         }
-    }
+
+        [HttpPost("create-terminal")]
+        public async Task<IActionResult> CreateTerminal([FromBody] CreateTerminalRequest request)
+        {
+            if (_serviceProviders?.TerminalService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+            if (request == null || string.IsNullOrEmpty(request.Name) || string.IsNullOrEmpty(request.Location))
+            {
+                return BadRequest("Invalid terminal data.");
+            }
+            var result = await _serviceProviders.TerminalService.CreateTerminal(request);
+            if (result == null)
+            {
+                return StatusCode(500, "Failed to create terminal.");
+            }
+            return Ok(result);
+		}
+	}
 }
