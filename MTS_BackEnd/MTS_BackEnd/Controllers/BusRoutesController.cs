@@ -86,5 +86,20 @@ namespace MTS.BackEnd.Controllers
 
             return Ok(new { Message = "Bus route deleted successfully." });
         }
+
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllBusRoutes()
+        {
+            if (_serviceProviders?.BusRouteService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+            var result = await _serviceProviders.BusRouteService.GetAll();
+            if (result == null || !result.Any())
+            {
+                return NotFound("No bus route found.");
+            }
+            return Ok(result);
+        }
     }
 }

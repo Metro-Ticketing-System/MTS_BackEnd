@@ -10,19 +10,18 @@ namespace MTS.BLL.Services
         Task<CreateBusRouteResponse> CreateBusRoute(CreateBusRouteRequest request);
         Task<CreateBusRouteResponse> UpdateBusRoute(BusRouteDto request);
         Task<bool> DeleteBusRoute(int id);
+        Task<List<BusRouteDto>> GetAll();
     }
 
     public class BusRouteService : IBusRouteService
     {
         private readonly IUnitOfWork _unitOfWork;
         private IGenericRepository<BusRoute> _busRouteRepo;
-        private IGenericRepository<Terminal> _terminalRepo;
 
         public BusRouteService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _busRouteRepo = _unitOfWork.GetRepository<BusRoute>();
-            _terminalRepo = _unitOfWork.GetRepository<Terminal>();
         }
 
         public async Task<CreateBusRouteResponse> CreateBusRoute(CreateBusRouteRequest request)
@@ -88,6 +87,29 @@ namespace MTS.BLL.Services
             {
                 Console.WriteLine($"Error during login: {ex.Message}");
                 return false;
+            }
+        }
+
+        public async Task<List<BusRouteDto>> GetAll()
+        {
+            try
+            {
+                var bus = await _busRouteRepo.GetAllByPropertyAsync(t => t.IsDeleted == false, includeProperties: "Terminals");
+                if (!bus.Any())
+                {
+                    return new List<BusRouteDto>();
+                }
+                return bus.Select(b => new BusRouteDto
+                {
+                    BusRouteId = b.Id,
+                    BusNumber = b.BusNumber,
+                    TerminalId = b.Terminals.Select(t => t.Id).ToList(),
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
             }
         }
 
