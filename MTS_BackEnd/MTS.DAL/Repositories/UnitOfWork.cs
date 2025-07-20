@@ -1,4 +1,5 @@
-﻿using MTS.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MTS.Data;
 
 namespace MTS.DAL.Repositories
 {
@@ -8,8 +9,8 @@ namespace MTS.DAL.Repositories
 		int SaveChangesWithTransaction();
 		Task<int> SaveChangesWithTransactionAsync();
 		Task<int> SaveAsync();
-
-	}
+		void AttachAsUnchanged<TEntity>(TEntity entity) where TEntity : class;
+    }
 	public class UnitOfWork : IUnitOfWork
 	{
 		private readonly MTS_Context _context;
@@ -71,5 +72,11 @@ namespace MTS.DAL.Repositories
 
 			return result;
 		}
-	}
+
+        public void AttachAsUnchanged<TEntity>(TEntity entity) where TEntity : class
+        {
+            _context.Entry(entity).State = EntityState.Unchanged;
+        }
+
+    }
 }

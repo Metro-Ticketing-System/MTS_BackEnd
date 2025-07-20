@@ -355,38 +355,31 @@ namespace MTS.Data
 
 			modelBuilder.Entity<TicketType>().HasData(ticketType1, ticketType2, ticketType3, ticketType4);
 
-			#endregion
+            #endregion
 
-			#region Terminal
-			var terminal1 = new Terminal
-			{
-				Id = 1,
-				Name = "Ga Hà Nội",
-				Location = "Hà Nội",
-				CreatedTime = new DateTime(2024, 01, 01)
-			};
+            #region Terminal
+            var createdTime = new DateTime(2024, 01, 01);
 
-			var terminal2 = new Terminal
-			{
-				Id = 2,
-				Name = "Ga Đà Nẵng",
-				Location = "Đà Nẵng",
-				CreatedTime = new DateTime(2024, 01, 01)
-			};
+            modelBuilder.Entity<Terminal>().HasData(
+                new Terminal { Id = 1, Name = "GA 1", Location = "Bến Thành", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 2, Name = "GA 2", Location = "Nhà hát Thành phố", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 3, Name = "GA 3", Location = "Ba Son", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 4, Name = "GA 4", Location = "Văn Thánh", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 5, Name = "GA 5", Location = "Tân Cảng", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 6, Name = "GA 6", Location = "Thảo Điền", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 7, Name = "GA 7", Location = "An Phú", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 8, Name = "GA 8", Location = "Rạch Chiếc", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 9, Name = "GA 9", Location = "Phước Long", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 10, Name = "GA 10", Location = "Bình Thái", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 11, Name = "GA 11", Location = "Thủ Đức", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 12, Name = "GA 12", Location = "Khu Công nghệ cao", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 13, Name = "GA 13", Location = "Đại học Quốc gia", IsDeleted = false, CreatedTime = createdTime },
+                new Terminal { Id = 14, Name = "GA 14", Location = "Bến xe Suối Tiên", IsDeleted = false, CreatedTime = createdTime }
+            );
+            #endregion
 
-			var terminal3 = new Terminal
-			{
-				Id = 3,
-				Name = "Ga Sài Gòn",
-				Location = "TP. Hồ Chí Minh",
-				CreatedTime = new DateTime(2024, 01, 01)
-			};
-
-			modelBuilder.Entity<Terminal>().HasData(terminal1, terminal2, terminal3);
-			#endregion
-
-			#region BusRoute
-			var busRoute1 = new BusRoute
+            #region BusRoute
+            var busRoute1 = new BusRoute
 			{
 				Id = 1,
 				BusNumber = "Bus 01",
