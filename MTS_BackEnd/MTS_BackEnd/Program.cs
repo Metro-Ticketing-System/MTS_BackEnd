@@ -147,6 +147,7 @@ builder.Services.AddScoped<ITrainRouteService, TrainRouteService>();
 builder.Services.AddScoped<IBusRouteService, BusRouteService>();
 builder.Services.AddScoped<ITerminalService, TerminalService>();
 builder.Services.AddHttpClient<IEmailValidationService, EmailValidationService>();
+builder.Services.AddHttpClient<ITransactionService, TransactionService>();
 
 
 var app = builder.Build();
