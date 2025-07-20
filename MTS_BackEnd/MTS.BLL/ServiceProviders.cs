@@ -22,7 +22,8 @@ namespace MTS.BLL
         ITerminalService TerminalService { get; }
         ITicketTypeService TicketTypeService { get; }
         IEmailValidationService EmailValidationService { get; }
-    }
+        ITransactionService TransactionService { get; }
+	}
     public class ServiceProviders : IServiceProviders
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -64,6 +65,8 @@ namespace MTS.BLL
 
         public ITicketTypeService TicketTypeService => new TicketTypeService(_unitOfWork);
         public IEmailValidationService EmailValidationService => _emailValidationService;
-    }
+
+		public ITransactionService TransactionService => new TransactionService(_unitOfWork);
+	}
 }
 

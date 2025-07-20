@@ -111,7 +111,7 @@ namespace MTS.BLL.Services
                 if (result == false)
                 {
                     account.DeletedAt = DateTime.UtcNow;
-                }
+				}
                 account.DeletedAt = null; // Reset DeletedAt if activating the account
                 account.UpdatedAt = DateTime.UtcNow;
                 await _userRepo.UpdateAsync(account);
