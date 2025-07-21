@@ -25,6 +25,7 @@ namespace MTS.BLL.Services
         Task SendPushNotification(Guid userId, int ticketId);
         Task SendExpoPushAsync(string expoPushToken, string title, string body, object? data = null);
         Task<TicketResponse?> CheckTicketExpire(int ticketId);
+        Task<CreateTicketResponseDto?> CheckTicketExpireByUser(Guid userId);
     }
 
     public class TicketService : ITicketService
@@ -517,6 +518,38 @@ namespace MTS.BLL.Services
                     };
                 }
                 return null;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<CreateTicketResponseDto?> CheckTicketExpireByUser(Guid userId)
+        {
+            try
+            {
+                var ticket = await _ticketRepo.GetAllByPropertyAsync(t => t.PassengerId == userId);
+                if (ticket == null)
+                {
+                    return null;
+                }
+
+                foreach (var item in ticket)
+                {
+                    if (item.ValidTo < DateTime.UtcNow)
+                    {
+                        item.Status = TicketStatus.Expired;
+                    }
+                    await _ticketRepo.UpdateAsync(item);
+                    var succeedCount = await _unitOfWork.SaveAsync();
+                }
+
+                return new CreateTicketResponseDto
+                {
+                    IsSuccess = true
+                };
             }
             catch (Exception ex)
             {

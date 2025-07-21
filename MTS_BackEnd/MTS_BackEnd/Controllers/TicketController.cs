@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using MTS.BLL;
 using MTS.BLL.Services.QRService;
 using MTS.DAL.Dtos;
+using MTS.Data.Models;
 using System.Security.Claims;
 
 namespace MTS.BackEnd.Controllers
@@ -193,6 +194,28 @@ namespace MTS.BackEnd.Controllers
             if (result == null)
             {
                 return NotFound($"Ticket with ID {ticketId} not found or expired.");
+            }
+
+            return Ok(result);
+        }
+
+        [HttpGet("CheckExpireByUserId")]
+        public async Task<IActionResult> CheckExpireByUser()
+        {
+            if (_serviceProviders?.TicketService == null)
+            {
+                return StatusCode(500, "Service is not available.");
+            }
+
+            var userId = User.FindFirstValue("id");
+            if (string.IsNullOrEmpty(userId)) return Unauthorized("User not authenticated!");
+            var userIdGuid = Guid.Parse(userId);
+
+            var result = await _serviceProviders.TicketService.CheckTicketExpireByUser(userIdGuid);
+
+            if (result == null)
+            {
+                return BadRequest("Error");
             }
 
             return Ok(result);
