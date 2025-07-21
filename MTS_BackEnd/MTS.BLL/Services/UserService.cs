@@ -177,10 +177,10 @@ namespace MTS.BLL.Services
                     PasswordHash = passwordHash,
                     RoleId = 3,
                     CreatedAt = DateTime.UtcNow,
-                    IsActive = false,
-                    EmailConfirmed = false,
-                    EmailVerificationToken = verificationToken,
-                    EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5),
+                    IsActive = true,
+                    EmailConfirmed = true,
+                    //EmailVerificationToken = verificationToken,
+                    //EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5),
                 };
 
                 await _userRepo.AddAsync(user);

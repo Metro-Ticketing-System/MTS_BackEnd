@@ -33,15 +33,16 @@ namespace MTS.BackEnd.Controllers
 			if (!registerResult.IsSuccess)
 				return Conflict("User already exists or email not exist!");
 
-			var verificationLink = $"https://HCMCMTS.com/user/verify-email?token={registerResult.VerificationToken}&email={Uri.EscapeDataString(registerResult.Email!)}";
+			//var verificationLink = $"https://HCMCMTS.com/user/verify-email?token={registerResult.VerificationToken}&email={Uri.EscapeDataString(registerResult.Email!)}";
 
-			await Task.Run(async () =>
-			{
-				await _emailSender.SendEmailAsync(registerResult.Email, "Email Verification",
-					$"Please verify your email: <a href='{verificationLink}'>Verify</a>");
-			});
+			//await Task.Run(async () =>
+			//{
+			//	await _emailSender.SendEmailAsync(registerResult.Email, "Email Verification",
+			//		$"Please verify your email: <a href='{verificationLink}'>Verify</a>");
+			//});
 
-			return Ok("Registration successful. Please check your email to verify your account.");
+			//return Ok("Registration successful. Please check your email to verify your account.");
+			return Ok("Registration successful!");
 		}
 
 		[HttpPost("verify-email")]
