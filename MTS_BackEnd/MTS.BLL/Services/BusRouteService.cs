@@ -16,7 +16,7 @@ namespace MTS.BLL.Services
     public class BusRouteService : IBusRouteService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private IGenericRepository<BusRoute> _busRouteRepo;
+        private readonly IGenericRepository<BusRoute> _busRouteRepo;
 
         public BusRouteService(IUnitOfWork unitOfWork)
         {
@@ -28,39 +28,26 @@ namespace MTS.BLL.Services
         {
             try
             {
-                // Tạo danh sách Terminal stub từ ID
-                var terminals = request.TerminalId
-                    .Select(id => new Terminal { Id = id })
-                    .ToList();
-
-                // Gán trạng thái Unchanged để EF hiểu là entity đã tồn tại
-                foreach (var terminal in terminals)
-                {
-                    _unitOfWork.AttachAsUnchanged(terminal); // Cách tốt nhất nếu không expose DbContext
-                }
-
                 var busRoute = new BusRoute
                 {
                     CreatedTime = DateTime.Now,
                     CreatedBy = request.PassengerId.ToString(),
                     LastUpdatedTime = DateTime.Now,
                     BusNumber = request.BusNumber,
-                    Terminals = terminals
+                    BusRouteTerminals = request.TerminalId.Select(tid => new BusRouteTerminal
+                    {
+                        TerminalId = tid
+                    }).ToList()
                 };
 
                 await _busRouteRepo.AddAsync(busRoute);
-                var succeedCount = await _unitOfWork.SaveAsync();
+                var result = await _unitOfWork.SaveAsync();
 
-                if (succeedCount > 0)
+                return new CreateBusRouteResponse
                 {
-                    return new CreateBusRouteResponse
-                    {
-                        IsSuccess = true,
-                        Id = busRoute.Id
-                    };
-                }
-
-                return new CreateBusRouteResponse { IsSuccess = false };
+                    IsSuccess = result > 0,
+                    Id = busRoute.Id
+                };
             }
             catch (Exception ex)
             {
@@ -69,47 +56,75 @@ namespace MTS.BLL.Services
             }
         }
 
+        public async Task<CreateBusRouteResponse> UpdateBusRoute(BusRouteDto request)
+        {
+            try
+            {
+                var busRoute = await _busRouteRepo.GetByPropertyAsync(
+                    t => t.Id == request.BusRouteId && t.IsDeleted == false,
+                    includeProperties: "BusRouteTerminals"
+                );
+
+                if (busRoute == null)
+                {
+                    return new CreateBusRouteResponse { IsSuccess = false };
+                }
+
+                busRoute.BusNumber = request.BusNumber;
+                busRoute.LastUpdatedTime = DateTime.Now;
+
+                // Lấy repository trung gian
+                var busRouteTerminalRepo = _unitOfWork.GetRepository<BusRouteTerminal>();
+
+                // Xóa từng liên kết cũ
+                foreach (var brt in busRoute.BusRouteTerminals.ToList())
+                {
+                    await busRouteTerminalRepo.DeleteAsync(brt.BusRouteId, brt.TerminalId);
+                }
+
+                // Thêm lại các liên kết mới
+                var newLinks = request.TerminalId.Select(id => new BusRouteTerminal
+                {
+                    BusRouteId = request.BusRouteId,
+                    TerminalId = id
+                });
+
+                await busRouteTerminalRepo.AddRangeAsync(newLinks);
+
+                var result = await _unitOfWork.SaveAsync();
+
+                return new CreateBusRouteResponse
+                {
+                    IsSuccess = result > 0,
+                    Id = busRoute.Id
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[UpdateBusRoute ERROR] {ex}");
+                return null;
+            }
+        }
+
+
         public async Task<bool> DeleteBusRoute(int id)
         {
             try
             {
-                var br = await _busRouteRepo.GetByPropertyAsync(tr => tr.Id == id);
-                if(br != null)
+                var busRoute = await _busRouteRepo.GetByPropertyAsync(t => t.Id == id);
+                if (busRoute != null)
                 {
-                    br.IsDeleted = true;
-                    await _busRouteRepo.UpdateAsync(br);
+                    busRoute.IsDeleted = true;
+                    await _busRouteRepo.UpdateAsync(busRoute);
                     await _unitOfWork.SaveAsync();
                     return true;
-                }   
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during login: {ex.Message}");
-                return false;
-            }
-        }
-
-        public async Task<List<BusRouteDto>> GetAll()
-        {
-            try
-            {
-                var bus = await _busRouteRepo.GetAllByPropertyAsync(t => t.IsDeleted == false, includeProperties: "Terminals");
-                if (!bus.Any())
-                {
-                    return new List<BusRouteDto>();
                 }
-                return bus.Select(b => new BusRouteDto
-                {
-                    BusRouteId = b.Id,
-                    BusNumber = b.BusNumber,
-                    TerminalId = b.Terminals.Select(t => t.Id).ToList(),
-                }).ToList();
+                return false;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during login: {ex.Message}");
-                return null;
+                Console.WriteLine($"[DeleteBusRoute ERROR] {ex.Message}");
+                return false;
             }
         }
 
@@ -117,71 +132,50 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var bus = await _busRouteRepo.GetByPropertyAsync(t => t.Id == id && t.IsDeleted == false, includeProperties: "Terminals");
-                if (bus == null)
-                {
+                var busRoute = await _busRouteRepo.GetByPropertyAsync(
+                    t => t.Id == id && t.IsDeleted == false,
+                    includeProperties: "BusRouteTerminals.Terminal"
+                );
+
+                if (busRoute == null)
                     return null;
-                }
-                var result = new BusRouteDto
+
+                return new BusRouteDto
                 {
-                    BusRouteId = bus.Id,
-                    BusNumber = bus.BusNumber,
-                    TerminalId = bus.Terminals.Select(t => t.Id).ToList(),
+                    BusRouteId = busRoute.Id,
+                    BusNumber = busRoute.BusNumber,
+                    TerminalId = busRoute.BusRouteTerminals
+                                    .Select(brt => brt.TerminalId)
+                                    .ToList()
                 };
-                return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during login: {ex.Message}");
+                Console.WriteLine($"[GetById ERROR] {ex}");
                 return null;
             }
         }
 
-        public async Task<CreateBusRouteResponse> UpdateBusRoute(BusRouteDto request)
+        public async Task<List<BusRouteDto>> GetAll()
         {
             try
             {
-                var model = await _busRouteRepo.GetByPropertyAsync(
-                    t => t.Id == request.BusRouteId && t.IsDeleted == false
+                var busRoutes = await _busRouteRepo.GetAllByPropertyAsync(
+                    t => !t.IsDeleted,
+                    includeProperties: "BusRouteTerminals.Terminal"
                 );
 
-                if (model == null)
+                return busRoutes.Select(b => new BusRouteDto
                 {
-                    return new CreateBusRouteResponse { IsSuccess = false };
-                }
-
-                // Gán lại terminal theo danh sách ID
-                var terminals = request.TerminalId
-                    .Select(id => new Terminal { Id = id })
-                    .ToList();
-
-                foreach (var terminal in terminals)
-                {
-                    _unitOfWork.AttachAsUnchanged(terminal); // tránh bị hiểu nhầm là entity mới
-                }
-
-                // Cập nhật dữ liệu
-                model.BusNumber = request.BusNumber;
-                model.Terminals = terminals;
-
-                await _busRouteRepo.UpdateAsync(model);
-                var succeedCount = await _unitOfWork.SaveAsync();
-
-                if (succeedCount > 0)
-                {
-                    return new CreateBusRouteResponse
-                    {
-                        IsSuccess = true,
-                        Id = model.Id
-                    };
-                }
-
-                return new CreateBusRouteResponse { IsSuccess = false };
+                    BusRouteId = b.Id,
+                    BusNumber = b.BusNumber,
+                    TerminalId = b.BusRouteTerminals.Select(brt => brt.TerminalId).ToList()
+                }).ToList();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[UpdateBusRoute ERROR] {ex}");
-                return null;
+                Console.WriteLine($"[GetAll ERROR] {ex}");
+                return new List<BusRouteDto>();
             }
         }
     }

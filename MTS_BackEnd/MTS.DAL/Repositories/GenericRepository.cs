@@ -12,6 +12,7 @@ namespace MTS.DAL.Repositories
 		public Task DeleteAsync(params object[] keyValues);
 		public Task<List<T>> GetAllByPropertyAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null);
 		public Task<T?> GetByPropertyAsync(Expression<Func<T, bool>>? filter = null, bool tracked = true, string? includeProperties = null);
+        Task AddRangeAsync(IEnumerable<T> entities); 
 	}
 
 	public class GenericRepository<T> : IGenericRepository<T> where T : class
@@ -92,6 +93,12 @@ namespace MTS.DAL.Repositories
 			}
 			return await query.FirstOrDefaultAsync();
 		}
-	}
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
+
+    }
 }
 

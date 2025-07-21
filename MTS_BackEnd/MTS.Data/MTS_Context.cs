@@ -19,6 +19,7 @@ namespace MTS.Data
 		public virtual DbSet<Terminal> Terminals { get; set; }
 		public virtual DbSet<TrainRoute> TrainRoutes { get; set; }
 		public virtual DbSet<BusRoute> BusRoutes { get; set; }
+		public virtual DbSet<BusRouteTerminal> BusRouteTerminals { get; set; }
 		public virtual DbSet<Ticket> Tickets { get; set; }
 		public virtual DbSet<TicketType> TicketTypes { get; set; }
 		public virtual DbSet<Wallet> Wallets { get; set; }
@@ -179,15 +180,24 @@ namespace MTS.Data
 
 			});
 
-			//BusRoute
-			modelBuilder.Entity<BusRoute>()
-				.HasMany(b => b.Terminals)
-				.WithMany(t => t.BusRoutes)
-				.UsingEntity(j => j.ToTable("BusRouteTerminal"));
+            //BusRoute
+            modelBuilder.Entity<BusRouteTerminal>()
+    .HasKey(brt => new { brt.BusRouteId, brt.TerminalId });
 
-			#region Seed Data
-			#region Role & Account
-			var roleAdmin = new Role
+            modelBuilder.Entity<BusRouteTerminal>()
+                .HasOne(brt => brt.BusRoute)
+                .WithMany(br => br.BusRouteTerminals)
+                .HasForeignKey(brt => brt.BusRouteId);
+
+            modelBuilder.Entity<BusRouteTerminal>()
+                .HasOne(brt => brt.Terminal)
+                .WithMany(t => t.BusRouteTerminals)
+                .HasForeignKey(brt => brt.TerminalId);
+
+
+            #region Seed Data
+            #region Role & Account
+            var roleAdmin = new Role
 			{
 				Id = 1,
 				Name = "Admin",
@@ -394,20 +404,20 @@ namespace MTS.Data
 			};
 
 			modelBuilder.Entity<BusRoute>().HasData(busRoute1, busRoute2);
-			#endregion
+            #endregion
 
-			#region BusRoute <-> Terminal (Many-to-Many)
-			modelBuilder.Entity("BusRouteTerminal").HasData(
-				new { BusRoutesId = 1, TerminalsId = 1 },
-				new { BusRoutesId = 1, TerminalsId = 2 },
-				new { BusRoutesId = 2, TerminalsId = 2 },
-				new { BusRoutesId = 2, TerminalsId = 3 }
-			);
-			#endregion
+            #region BusRoute <-> Terminal (Many-to-Many)
+            modelBuilder.Entity<BusRouteTerminal>().HasData(
+						new BusRouteTerminal { BusRouteId = 1, TerminalId = 1 },
+						new BusRouteTerminal { BusRouteId = 1, TerminalId = 2 },
+						new BusRouteTerminal { BusRouteId = 2, TerminalId = 2 },
+						new BusRouteTerminal { BusRouteId = 2, TerminalId = 3 }
+					);
+            #endregion
 
 
-			#region TrainRoute
-			var trainRoute1 = new TrainRoute
+            #region TrainRoute
+            var trainRoute1 = new TrainRoute
 			{
 				Id = 1,
 				Price = 350000m,

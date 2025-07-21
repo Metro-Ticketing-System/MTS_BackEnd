@@ -1,9 +1,4 @@
 ﻿using MTS.Data.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MTS.Data.Models
 {
@@ -15,6 +10,6 @@ namespace MTS.Data.Models
         // Navigation properties
         public ICollection<TrainRoute> StartRoutes { get; set; }
         public ICollection<TrainRoute> EndRoutes { get; set; }
-        public ICollection<BusRoute> BusRoutes { get; set; }
+        public ICollection<BusRouteTerminal> BusRouteTerminals { get; set; }
     }
 }
