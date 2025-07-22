@@ -10,7 +10,8 @@ namespace MTS.BLL.Services
 	public interface IRefundService
 	{
 		Task<(bool Success, string Message)> CreateRefundRequestAsync(Guid passengerId, CreateRefundRequestDto requestDto);
-		Task<List<RefundRequestDto>> GetPendingRefundsAsync();
+		Task<List<RefundRequestDto>> GetAllAsync();
+		Task<List<RefundRequestDto>> GetAllForPassengerAsync(Guid passengerId);
 		Task<(bool Success, string? Message)> ProcessRefundRequestAsync(int requestId, Guid adminId, ProcessRefundRequestDto requestDto);
 	}
 
@@ -71,25 +72,42 @@ namespace MTS.BLL.Services
 			}
 		}
 
-		public async Task<List<RefundRequestDto>> GetPendingRefundsAsync()
+		public async Task<List<RefundRequestDto>> GetAllAsync()
 		{
-			var requests = await _unitOfWork.GetRepository<RefundRequestApplication>().GetAllByPropertyAsync(
-				r => r.Status == ApplicationStatus.Pending,
-				includeProperties: "Passenger,Ticket,Passenger,Admin");
+			var requests = await _unitOfWork.GetRepository<RefundRequestApplication>().GetAllByPropertyAsync(includeProperties: "Passenger,Ticket,Admin");
 
 			return requests.Select(r => new RefundRequestDto
 			{
 				Id = r.Id,
 				TicketId = r.TicketId,
-				PassengerName = $"{r.Passenger.FirstName} {r.Passenger.LastName}",
+				PassengerName = $"{r.Passenger.LastName} {r.Passenger.FirstName}",
 				TicketAmount = r.Ticket.TotalAmount,
 				Reason = r.Reason,
 				Status = r.Status,
 				RequestedAt = r.RequestedAt,
-				AdminName = r.Admin != null ? $"{r.Admin.FirstName} {r.Admin.LastName}" : null,
+				AdminName = r.Admin != null ? $"{r.Admin.LastName} {r.Admin.FirstName}" : null,
 				ProcessedAt = r.ProcessedAt,
 				AdminNotes = r.AdminNotes
-			}).ToList();
+			}).ToList() ?? [];
+		}
+
+		public async Task<List<RefundRequestDto>> GetAllForPassengerAsync(Guid passengerId)
+		{
+			var refundRequests = await _unitOfWork.GetRepository<RefundRequestApplication>()
+				.GetAllByPropertyAsync(r => r.PassengerId == passengerId, includeProperties: "Ticket,Passenger,Admin");
+			return refundRequests.Select(r => new RefundRequestDto
+			{
+				Id = r.Id,
+				TicketId = r.TicketId,
+				PassengerName = $"{r.Passenger.LastName} {r.Passenger.FirstName}",
+				TicketAmount = r.Ticket.TotalAmount,
+				Reason = r.Reason,
+				Status = r.Status,
+				RequestedAt = r.RequestedAt,
+				AdminName = r.Admin != null ? $"{r.Admin.LastName} {r.Admin.FirstName}" : null,
+				ProcessedAt = r.ProcessedAt,
+				AdminNotes = r.AdminNotes
+			}).ToList() ?? [];
 		}
 
 		public async Task<(bool Success, string? Message)> ProcessRefundRequestAsync(int requestId, Guid adminId, ProcessRefundRequestDto requestDto)
@@ -103,6 +121,11 @@ namespace MTS.BLL.Services
 
 			var ticket = refundRequest.Ticket;
 			if (ticket.Status != TicketStatus.UnUsed)
+			{
+				return (false, "Ticket has been used and can no longer be refunded.");
+			}
+
+			if (ticket.LastUpdatedTime != ticket.CreatedTime)
 			{
 				return (false, "Ticket has been used and can no longer be refunded.");
 			}
