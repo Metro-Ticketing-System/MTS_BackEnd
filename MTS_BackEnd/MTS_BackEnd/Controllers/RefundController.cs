@@ -34,11 +34,21 @@ namespace MTS.BackEnd.Controllers
 			return Ok(message);
 		}
 
-		[HttpGet("pending-requests")]
+		[HttpGet("requests-for-admin")]
 		[Authorize(Roles = "1")] // Admin only
-		public async Task<IActionResult> GetPendingRefunds()
+		public async Task<IActionResult> GetAllRefund()
 		{
-			var requests = await _serviceProviders.RefundService.GetPendingRefundsAsync();
+			var requests = await _serviceProviders.RefundService.GetAllAsync();
+			return Ok(requests);
+		}
+
+		[HttpGet("requests-for-passenger")]
+		[Authorize(Roles = "3")] // Passenger only
+		public async Task<IActionResult> GetAllRefundForPassenger()
+		{
+			var userId = User.FindFirstValue("id");
+			if (string.IsNullOrEmpty(userId)) return Unauthorized();
+			var requests = await _serviceProviders.RefundService.GetAllForPassengerAsync(Guid.Parse(userId));
 			return Ok(requests);
 		}
 
