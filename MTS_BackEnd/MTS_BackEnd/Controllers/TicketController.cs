@@ -181,7 +181,7 @@ namespace MTS.BackEnd.Controllers
             return Ok(result);
         }
 
-        [HttpGet("CheckExpire/{ticketId}")]
+        [HttpPatch("CheckExpire/{ticketId}")]
         public async Task<IActionResult> CheckTicketExpire(int ticketId)
         {
             if (_serviceProviders?.TicketService == null)
@@ -199,7 +199,7 @@ namespace MTS.BackEnd.Controllers
             return Ok(result);
         }
 
-        [HttpGet("CheckExpireByUserId")]
+        [HttpPatch("CheckExpireByUserId")]
         public async Task<IActionResult> CheckExpireByUser()
         {
             if (_serviceProviders?.TicketService == null)
@@ -218,6 +218,16 @@ namespace MTS.BackEnd.Controllers
                 return BadRequest("Error");
             }
 
+            return Ok(result);
+        }
+
+        [HttpGet("GetAllTicket")]
+        public async Task<IActionResult> GetAllTicket()
+        {
+            if (_serviceProviders?.TicketService == null)
+                return StatusCode(500, "Service is not available.");
+
+            var result = await _serviceProviders.TicketService.GetLAllTicket();
             return Ok(result);
         }
     }

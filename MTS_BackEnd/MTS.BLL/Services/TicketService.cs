@@ -26,6 +26,7 @@ namespace MTS.BLL.Services
         Task SendExpoPushAsync(string expoPushToken, string title, string body, object? data = null);
         Task<TicketResponse?> CheckTicketExpire(int ticketId);
         Task<CreateTicketResponseDto?> CheckTicketExpireByUser(Guid userId);
+        Task<List<TicketResponse>> GetLAllTicket();
     }
 
     public class TicketService : ITicketService
@@ -554,6 +555,47 @@ namespace MTS.BLL.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error during login: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<List<TicketResponse>> GetLAllTicket()
+        {
+            try
+            {
+                var ticket = await _ticketRepo.GetAllByPropertyAsync(t => t.IsDeleted == false, includeProperties: "Passenger, TrainRoute, TicketType");
+                if (ticket == null)
+                {
+                    return null;
+                }
+                var dto = ticket.Select(t => new TicketResponse
+                {
+                    TicketId = t.Id,
+                    PassengerId = t.PassengerId,
+                    PassengerName = t.Passenger.FirstName + " " + t.Passenger.LastName,
+                    Email = t.Passenger.Email,
+                    TicketTypeId = t.TicketTypeId,
+                    TicketTypeName = t.TicketType.TicketTypeName,
+                    TotalAmount = t.TotalAmount,
+                    ValidTo = t.ValidTo,
+                    PurchaseTime = t.PurchaseTime,
+                    TrainRouteId = t.TrainRouteId ?? 0,
+                    TrainRoutePrice = t.TrainRoute?.Price ?? 0m,
+                    StartTerminal = t.TrainRoute?.StartTerminal ?? null,
+                    EndTerminal = t.TrainRoute?.EndTerminal ?? null,
+                    QRCode = t.QRCode,
+                    Status = t.Status,
+                    NumberOfTicket = t.NumberOfTicket,
+                    IsPaid =    t.isPaid,
+                    TxnRef = t.TxnRef,
+                    VnPayTransactionDate = t.VnPayTransactionDate,
+                    VnPayTransactionNo = t.VnPayTransactionNo
+                }).ToList();
+                return dto;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting ticket by id: {ex.Message}");
                 return null;
             }
         }
