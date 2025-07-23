@@ -21,8 +21,9 @@ namespace MTS.BLL.Services
         Task<List<UserAccountDto>> GetAllUsers();
         Task<UserAccountDto?> GetUserAsync(Guid id);
         public Task<RegisterResultDto> ResendVerificationEmailAsync(string email);
+        public Task<LoginResponseModelDto?> RefreshToken(string refreshToken);
 
-        public Task<bool> SavePushToken(PushTokenDto pushTokenDto);
+		//public Task<bool> SavePushToken(PushTokenDto pushTokenDto);
     }
     public class UserService : IUserService
     {
@@ -129,6 +130,31 @@ namespace MTS.BLL.Services
             }
         }
 
+        public async Task<LoginResponseModelDto?> RefreshToken(string refreshToken)
+        {
+            try
+            {
+                var user = await _userRepo.GetByPropertyAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiry > DateTime.UtcNow && u.IsActive);
+                if (user == null) return null;
+                
+                // Generate new tokens
+                var newTokenResponse = await Authentication.CreateToken(user, user.RoleId, _jwtSettings);
+                
+                // Update refresh token in database
+                user.RefreshToken = newTokenResponse.RefreshToken;
+                user.RefreshTokenExpiry = newTokenResponse.RefreshTokenExpiryTime; 
+                await _userRepo.UpdateAsync(user);
+                await _unitOfWork.SaveAsync();
+                
+                return newTokenResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing token: {ex.Message}");
+                return null;
+            }
+        }
+        
         public async Task<LoginResponseModelDto?> Login(LoginRequestModelDto loginRequest)
         {
             try
@@ -138,6 +164,13 @@ namespace MTS.BLL.Services
                 var checkPassword = VerifyPassword(account, loginRequest.Password);
                 if (account == null || !checkPassword) return null;
                 LoginResponseModelDto token = await Authentication.CreateToken(account!, account.RoleId!, _jwtSettings);
+                
+                // Store refresh token in database
+                account.RefreshToken = token.RefreshToken;
+                account.RefreshTokenExpiry = token.RefreshTokenExpiryTime; 
+                await _userRepo.UpdateAsync(account);
+                await _unitOfWork.SaveAsync();
+                
                 return token;
             }
             catch (Exception ex)

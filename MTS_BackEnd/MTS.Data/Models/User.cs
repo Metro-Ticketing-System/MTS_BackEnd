@@ -12,6 +12,8 @@ namespace MTS.Data.Models
 		public string Email { get; set; } = string.Empty;
 		public string NormalizedEmail { get; set; } = string.Empty;
 		public bool EmailConfirmed { get; set; }
+		public string? RefreshToken { get; set; } = string.Empty;
+		public DateTime? RefreshTokenExpiry { get; set; }
 		public string? EmailVerificationToken { get; set; } = string.Empty;
 		public DateTime? EmailVerificationTokenExpiry { get; set; }
 		public string? PasswordResetToken { get;set; } = string.Empty;
