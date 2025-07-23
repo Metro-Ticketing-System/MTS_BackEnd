@@ -10,6 +10,7 @@ namespace MTS.BLL.Services
 	{
 		public Task<bool> CreateAsync(Guid passengerId, PriorityType type, IFormFile frontIdCardImage, IFormFile backIdCardImage, IFormFile? studentCardImage, IFormFile? revolutionaryContributorImag);
 		public Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsAsync();
+		public Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsForPassengerAsync(Guid userId);
 		public Task<bool> UpdatePriorityApplicationStatusAsync(int applicationId, ApplicationStatus status, string? note, Guid adminId);
 		public Task<PriorityApplicationDto?> GetPriorityApplicationAsync(int applicationId);
 	}
@@ -134,6 +135,39 @@ namespace MTS.BLL.Services
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Error retrieving priority applications: {ex.Message}");
+				return new List<PriorityApplicationDto>();
+			}
+		}
+
+		public async Task<List<PriorityApplicationDto>> GetAllPriorityApplicationsForPassengerAsync(Guid userId)
+		{
+			try
+			{
+				var applications = await _unitOfWork.GetRepository<PriorityApplication>().GetAllByPropertyAsync(x => x.PassengerId == userId ,includeProperties: "Passenger, Admin");
+				var applicationDtos = applications.Select(app => new PriorityApplicationDto
+				{
+					Id = app.Id,
+					CreatedBy = app.CreatedBy,
+					CreatedTime = app.CreatedTime,
+					Type = app.Type,
+					FrontIdCardImageUrl = app.FrontIdCardImageUrl,
+					BackIdCardImageUrl = app.BackIdCardImageUrl,
+					StudentCardImageUrl = app.StudentCardImageUrl,
+					RevolutionaryContributorImageUrl = app.RevolutionaryContributorImageUrl,
+					Status = app.Status,
+					PassengerName = app.Passenger.LastName + " " + app.Passenger.FirstName,
+					AdminName = app.Admin?.LastName + " " + app.Admin?.FirstName,
+					UpdatedBy = app.UpdatedBy,
+					LastUpdatedTime = app.LastUpdatedTime,
+					Note = app.Note,
+					User = UserAccountDto.FromModelToDto(app.Passenger)
+				}).ToList();
+
+				return applicationDtos ?? [];
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Error retrieving priority applications for passenger: {ex.Message}");
 				return new List<PriorityApplicationDto>();
 			}
 		}
