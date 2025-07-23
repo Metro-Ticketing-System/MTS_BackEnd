@@ -100,6 +100,21 @@ namespace MTS.BackEnd.Controllers
 			return Ok(loginResponse);
 		}
 
+		[HttpPost("refresh-token/{refreshToken}")]
+		public async Task<IActionResult> RefreshToken([FromRoute] string refreshToken)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
+
+			var refreshedTokens = await _serviceProviders.UserService.RefreshToken(refreshToken);
+			if (refreshedTokens == null)
+				return Unauthorized("Invalid or expired refresh token");
+
+			return Ok(refreshedTokens);
+		}
+
 		[HttpPost("forgot-password")]
 		public async Task<IActionResult> ForgotPassword([FromQuery][Required] string email)
 		{
@@ -233,22 +248,22 @@ namespace MTS.BackEnd.Controllers
 			return Ok(userAccounts);
 		}
 
-        [HttpPost("SavePushToken")]
-        public async Task<IActionResult> SavePushToken([FromBody] PushTokenDto pushTokenDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost("SavePushToken")]
+        //public async Task<IActionResult> SavePushToken([FromBody] PushTokenDto pushTokenDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var success = await _serviceProviders.UserService.SavePushToken(pushTokenDto);
+        //    var success = await _serviceProviders.UserService.SavePushToken(pushTokenDto);
 
-            if (!success)
-            {
-                return BadRequest(new { Message = "Failed to save push token." });
-            }
+        //    if (!success)
+        //    {
+        //        return BadRequest(new { Message = "Failed to save push token." });
+        //    }
 
-            return Ok(new { Message = "Push token saved successfully." });
-        }
+        //    return Ok(new { Message = "Push token saved successfully." });
+        //}
     }
 }

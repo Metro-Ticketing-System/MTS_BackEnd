@@ -10,7 +10,7 @@ namespace MTS.DAL.Libraries
 {
 	public static class Authentication
 	{
-		public static async Task<LoginResponseModelDto> CreateToken(User user, int? role, JWTSettings jwtSettings, bool isRefresh = false)
+		public static async Task<LoginResponseModelDto> CreateToken(User user, int? role, JWTSettings jwtSettings)
 		{
 			// Tạo ra các claims
 			DateTime now = DateTime.UtcNow;
@@ -31,7 +31,7 @@ namespace MTS.DAL.Libraries
 			SigningCredentials? creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
 			// Generate access token
-			DateTime dateTimeAccessExpr = now.AddMinutes(jwtSettings.AccessTokenExpirationMinutes);
+			DateTime dateTimeAccessExpr = now.AddDays(jwtSettings.AccessTokenExpirationDays);
 			claims.Add(new Claim("token_type", "access"));
 			JwtSecurityToken accessToken = new JwtSecurityToken(
 				claims: claims,
@@ -44,10 +44,8 @@ namespace MTS.DAL.Libraries
 			string refreshTokenString = string.Empty;
 			string accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
 
-			if (isRefresh == false)
-			{
-				// tạo ra refresh Token
-				DateTime datetimeRefrestExpr = now.AddDays(jwtSettings.RefreshTokenExpirationDays);
+			// tạo ra refresh Token
+			DateTime datetimeRefrestExpr = now.AddMonths(jwtSettings.RefreshTokenExpirationMonths);
 
 				claims.Remove(claims.First(c => c.Type == "token_type"));
 				claims.Add(new Claim("token_type", "refresh"));
@@ -61,7 +59,6 @@ namespace MTS.DAL.Libraries
 				);
 
 				refreshTokenString = new JwtSecurityTokenHandler().WriteToken(refreshToken);
-			}
 
 			return new LoginResponseModelDto
 			{
@@ -69,6 +66,8 @@ namespace MTS.DAL.Libraries
 				Role = user.RoleId,
 				Username = user.UserName,
 				Token = accessTokenString,
+				RefreshToken = refreshTokenString,
+				RefreshTokenExpiryTime = datetimeRefrestExpr
 			};
 		}
 		public static Guid GetUserId(this ClaimsPrincipal user)
