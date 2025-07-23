@@ -46,15 +46,16 @@ namespace MTS.BLL.Services
 		{
 			try
 			{
+                var now = DateTime.UtcNow;
 				var ticket = new Ticket
 				{
 					CreatedBy = createTicketRequestDto.PassengerId.ToString(),
-					CreatedTime = DateTime.UtcNow,
-					LastUpdatedTime = DateTime.UtcNow,
+					CreatedTime = now,
+					LastUpdatedTime = now,
 					PassengerId = createTicketRequestDto.PassengerId,
 					TicketTypeId = createTicketRequestDto.TicketTypeId,
 					TotalAmount = createTicketRequestDto.TotalAmount,
-					ValidTo = DateTime.UtcNow.AddDays(1),
+					ValidTo = now.AddDays(1),
 					TrainRouteId = createTicketRequestDto.TrainRouteId ?? null,
 					Status = Data.Enums.TicketStatus.UnUsed,
 					NumberOfTicket = createTicketRequestDto.NumberOfTicket,
