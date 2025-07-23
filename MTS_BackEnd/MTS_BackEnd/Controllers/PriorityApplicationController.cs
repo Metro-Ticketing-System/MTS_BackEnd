@@ -56,10 +56,24 @@ namespace MTS.BackEnd.Controllers
 		public async Task<IActionResult> GetAll()
 		{
 			var applications = await _serviceProviders.PriorityApplicationService.GetAllPriorityApplicationsAsync();
-			if (applications == null || !applications.Any())
-			{
-				return NotFound("No priority applications found.");
-			}
+			//if (applications == null || !applications.Any())
+			//{
+			//	return NotFound("No priority applications found.");
+			//}
+			return Ok(applications);
+		}
+
+		[Authorize(Roles = "3")]
+		[HttpGet("get-all-for-passenger")]
+		public async Task<IActionResult> GetAllForPassenger()
+		{
+			var userId = User.FindFirstValue("id");
+			if (string.IsNullOrEmpty(userId)) return Unauthorized("User not authenticated!");
+			var applications = await _serviceProviders.PriorityApplicationService.GetAllPriorityApplicationsForPassengerAsync(Guid.Parse(userId));
+			//if (applications == null || !applications.Any())
+			//{
+			//	return NotFound("No priority applications found.");
+			//}
 			return Ok(applications);
 		}
 
