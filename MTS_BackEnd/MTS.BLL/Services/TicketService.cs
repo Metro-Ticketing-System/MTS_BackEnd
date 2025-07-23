@@ -299,7 +299,15 @@ namespace MTS.BLL.Services
                     ticket.ValidTo = DateTime.UtcNow.AddDays(1);
                 }    
 
-                ticket.Status = Data.Enums.TicketStatus.UnUsed;
+                if(ticket.Status == TicketStatus.Disabled || ticket.Status == TicketStatus.Expired)
+                {
+                    ticket.Status = TicketStatus.InUse;
+                }
+                else if(ticket.Status == TicketStatus.InUse)
+                {
+                    ticket.Status = TicketStatus.UnUsed;
+                }    
+                
                 await _ticketRepo.UpdateAsync(ticket);
                 var succeedCount = await _unitOfWork.SaveAsync();
                 if (succeedCount > 0)

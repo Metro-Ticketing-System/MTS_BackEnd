@@ -42,7 +42,7 @@ namespace MTS.BackEnd.Controllers
             var response = _serviceProviders.PaymentService.PaymentExecute(Request.Query);
             if (response == null || response.OrderId == null)
             {
-                return Redirect("http://192.168.2.4:5055/api/Payment/paymentCallback?transactionStatus=02");
+                return Redirect("http://103.252.93.73:5000/api/Payment/paymentCallback?transactionStatus=02");
             }
 
             bool isSuccess = response.VnPayResponseCode == "00";
@@ -59,7 +59,7 @@ namespace MTS.BackEnd.Controllers
                     await HandleWalletTopUp(response, isSuccess);
                 }
 
-                return Redirect($"http://192.168.2.4:5055/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
+                return Redirect($"http://103.252.93.73:5000/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
             }
             if (response.OrderId.StartsWith("WALLET_")) return await HandleWalletTopUp(response, isSuccess);
             else return await HandleTicketPurchase(response);
@@ -69,13 +69,13 @@ namespace MTS.BackEnd.Controllers
         {
             if (!TryParseTicketId(response.OrderId, out int ticketId))
             {
-                return Redirect($"http://192.168.2.4:5055/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
+                return Redirect($"http://103.252.93.73:5000/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
             }
 
             var ticket = await _serviceProviders.TicketService.GetTicketById(ticketId);
             if (ticket == null)
             {
-                return Redirect($"http://192.168.2.4:5055/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
+                return Redirect($"http://103.252.93.73:5000/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&orderId={response.OrderId}");
             }
 
 
@@ -111,9 +111,9 @@ namespace MTS.BackEnd.Controllers
             var result = await _serviceProviders.TicketService.UpdateTicket(ticketDto);
             if (result.IsSuccess)
             {
-                return Redirect($"http://192.168.2.49:5055/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&vnPayTransactionNo={ticket.VnPayTransactionNo}&totalAmountn={ticket.TotalAmount}");
+                return Redirect($"http://103.252.93.73:5000/api/Payment/paymentCallback?transactionStatus={response.VnPayTransactionStatus}&vnPayTransactionNo={ticket.VnPayTransactionNo}&totalAmountn={ticket.TotalAmount}");
             }
-            return Redirect($"http://192.168.2.4:5055/api/Payment/paymentCallback?status=02&orderId={response.OrderId}");
+            return Redirect($"http://103.252.93.73:5000/api/Payment/paymentCallback?status=02&orderId={response.OrderId}");
         }
 
         private async Task<IActionResult> HandleWalletTopUp(PaymentResponseModel response, bool isSuccess)
