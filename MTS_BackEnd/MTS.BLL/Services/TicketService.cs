@@ -46,7 +46,7 @@ namespace MTS.BLL.Services
 		{
 			try
 			{
-                var now = DateTime.UtcNow;
+                var now = DateTime.Now;
 				var ticket = new Ticket
 				{
 					CreatedBy = createTicketRequestDto.PassengerId.ToString(),
@@ -57,9 +57,13 @@ namespace MTS.BLL.Services
 					TotalAmount = createTicketRequestDto.TotalAmount,
 					ValidTo = now.AddDays(1),
 					TrainRouteId = createTicketRequestDto.TrainRouteId ?? null,
-					Status = Data.Enums.TicketStatus.UnUsed,
+					Status = TicketStatus.UnUsed,
 					NumberOfTicket = createTicketRequestDto.NumberOfTicket,
 				};
+                if(ticket.TicketTypeId == 3)
+                {
+                    ticket.ValidTo = now.AddMonths(1);
+                }    
 				await _ticketRepo.AddAsync(ticket);
 				var succeedCount = await _unitOfWork.SaveAsync();
 				if (succeedCount > 0)
@@ -148,7 +152,7 @@ namespace MTS.BLL.Services
 				ticketModel.Status = ticket.Status;
 				ticketModel.isPaid = ticket.isPaid;
 				ticketModel.QRCode = ticket.QRCode;
-				ticketModel.LastUpdatedTime = DateTime.UtcNow;
+				ticketModel.LastUpdatedTime = DateTime.Now;
 				ticketModel.PurchaseTime = ticket.PurchaseTime;
 				ticketModel.TxnRef = ticket.TxnRef;
 				ticketModel.VnPayTransactionNo = ticket.VnPayTransactionNo;
@@ -180,16 +184,16 @@ namespace MTS.BLL.Services
                 var ticket = new Ticket
                 {
                     CreatedBy = request.PassengerId.ToString(),
-                    CreatedTime = DateTime.UtcNow,
-                    LastUpdatedTime = DateTime.UtcNow,
+                    CreatedTime = DateTime.Now,
+                    LastUpdatedTime = DateTime.Now,
                     PassengerId = request.PassengerId,
                     TicketTypeId = request.TicketTypeId,
                     TotalAmount = 0,
-                    ValidTo = DateTime.UtcNow.AddYears(1),
+                    ValidTo = DateTime.Now.AddYears(1),
                     TrainRouteId = request.TrainRouteId,
                     Status = Data.Enums.TicketStatus.UnUsed,
                     NumberOfTicket = 1,
-					PurchaseTime = DateTime.UtcNow,
+					PurchaseTime = DateTime.Now,
 					isPaid = true,
                 };
                 await _ticketRepo.AddAsync(ticket);
@@ -296,7 +300,7 @@ namespace MTS.BLL.Services
                 bool isOneWay = ticket.TicketTypeId == 1;
                 if(isOneWay)
                 {
-                    ticket.ValidTo = DateTime.UtcNow.AddDays(1);
+                    ticket.ValidTo = DateTime.Now.AddDays(1);
                 }    
 
                 if(ticket.Status == TicketStatus.Disabled || ticket.Status == TicketStatus.Expired)
@@ -368,7 +372,7 @@ namespace MTS.BLL.Services
                     };
                 }
 
-                if (ticket.ValidTo < DateTime.UtcNow && ticket.Status == TicketStatus.UnUsed)
+                if (ticket.ValidTo < DateTime.Now)
                 {
                     return new QRScanResponse
                     {
@@ -428,9 +432,9 @@ namespace MTS.BLL.Services
 
                 if(isOneWay & request.isOut)
                 {
-                    ticket.ValidTo = DateTime.UtcNow.AddSeconds(1);
+                    ticket.ValidTo = DateTime.Now.AddSeconds(1);
                 }
-                ticket.LastUpdatedTime = DateTime.UtcNow;
+                ticket.LastUpdatedTime = DateTime.Now;
                 await _ticketRepo.UpdateAsync(ticket);
                 await _unitOfWork.SaveAsync();
 
@@ -494,7 +498,7 @@ namespace MTS.BLL.Services
                     return null;
                 }
 
-                if (ticket.ValidTo < DateTime.UtcNow)
+                if (ticket.ValidTo < DateTime.Now)
                 {
                     ticket.Status = TicketStatus.Expired;
                 }
@@ -548,7 +552,7 @@ namespace MTS.BLL.Services
 
                 foreach (var item in ticket)
                 {
-                    if (item.ValidTo < DateTime.UtcNow)
+                    if (item.ValidTo < DateTime.Now && (item.Status == TicketStatus.UnUsed || item.Status == TicketStatus.InUse))
                     {
                         item.Status = TicketStatus.Expired;
                     }

@@ -76,7 +76,7 @@ namespace MTS.BLL.Services
 				{
 					PassengerId = passengerId,
 					CreatedBy = user.UserName,
-					CreatedTime = DateTime.UtcNow,
+					CreatedTime = DateTime.Now,
 					Type = type,
 					FrontIdCardImageUrl = frontIdCardImageUrl,
 					BackIdCardImageUrl = backIdCardImageUrl,
@@ -233,7 +233,7 @@ namespace MTS.BLL.Services
 				application.Note = note;
 				application.AdminId = adminId;
 				application.UpdatedBy = admin.UserName;
-				application.LastUpdatedTime = DateTime.UtcNow;
+				application.LastUpdatedTime = DateTime.Now;
 
 				await _unitOfWork.GetRepository<PriorityApplication>().UpdateAsync(application);
 

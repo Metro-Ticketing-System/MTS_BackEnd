@@ -21,7 +21,7 @@ namespace MTS.BLL.Services
 		{
 			if (model.Amount == null || model.Amount == 0) { return null; }
 			var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]!);
-			var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
+			var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now, timeZoneById);
 			var pay = new VnPayLibrary();
 			var urlCallBack = _configuration["PaymentCallBack:ReturnUrl"];
 			var createDate = timeNow.ToString("yyyyMMddHHmmss");

@@ -32,8 +32,8 @@ namespace MTS.BLL.Services
                     Name = request.Name,
                     Location = request.Location,
                     CreatedBy = request.UserId.ToString(),
-                    CreatedTime = DateTime.UtcNow,
-                    LastUpdatedTime = DateTime.UtcNow
+                    CreatedTime = DateTime.Now,
+                    LastUpdatedTime = DateTime.Now
                 };
 
                 await _terminalRepo.AddAsync(terminal);

@@ -47,8 +47,8 @@ namespace MTS.BLL.Services.VNPayService
 			var tmnCode = _configuration["Vnpay:TmnCode"];
 			var hashSecret = _configuration["Vnpay:HashSecret"];
 
-			var requestId = DateTime.UtcNow.ToString("yyyyMMddHHmmssfff");
-			var requestTime = DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+			var requestId = DateTime.Now.ToString("yyyyMMddHHmmssfff");
+			var requestTime = DateTime.Now.ToString("yyyyMMddHHmmss");
 			var vnpTransactionNoForRequest = string.IsNullOrEmpty(vnpTransactionNo) ? "0" : vnpTransactionNo;
 
 

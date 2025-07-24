@@ -37,7 +37,7 @@ namespace MTS.BLL.Services
 			if (ticket.Status != TicketStatus.UnUsed)
 				return (false, "Ticket has already been used and cannot be refunded.");
 
-			if (ticket.PurchaseTime == null || ticket.PurchaseTime.Value.AddHours(24) < DateTime.UtcNow)
+			if (ticket.PurchaseTime == null || ticket.PurchaseTime.Value.AddHours(24) < DateTime.Now)
 				return (false, "The 24-hour window for a refund has passed.");
 
 			var existingRequest = await _unitOfWork.GetRepository<RefundRequestApplication>().GetByPropertyAsync(r => r.TicketId == requestDto.TicketId);
@@ -54,8 +54,8 @@ namespace MTS.BLL.Services
 				PassengerId = passengerId,
 				Reason = requestDto.Reason,
 				Status = ApplicationStatus.Pending,
-				RequestedAt = DateTime.UtcNow,
-				CreatedTime = DateTime.UtcNow,
+				RequestedAt = DateTime.Now,
+				CreatedTime = DateTime.Now,
 				CreatedBy = passenger.UserName,
 			};
 
@@ -137,7 +137,7 @@ namespace MTS.BLL.Services
 
 			refundRequest.AdminId = adminId;
 			refundRequest.AdminNotes = requestDto.AdminNotes;
-			refundRequest.ProcessedAt = DateTime.UtcNow;
+			refundRequest.ProcessedAt = DateTime.Now;
 
 			if (requestDto.Status == ApplicationStatus.Rejected)
 			{

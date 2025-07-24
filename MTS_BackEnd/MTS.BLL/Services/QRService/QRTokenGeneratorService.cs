@@ -29,7 +29,7 @@ namespace MTS.BLL.Services.QRService
                 new Claim("user_id", userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             }),
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.Now.AddMinutes(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

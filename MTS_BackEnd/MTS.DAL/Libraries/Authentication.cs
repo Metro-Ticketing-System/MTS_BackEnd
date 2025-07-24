@@ -13,7 +13,7 @@ namespace MTS.DAL.Libraries
 		public static async Task<LoginResponseModelDto> CreateToken(User user, int? role, JWTSettings jwtSettings)
 		{
 			// Tạo ra các claims
-			DateTime now = DateTime.UtcNow;
+			DateTime now = DateTime.Now;
 
 			// Danh sách các claims chung cho cả Access Token và Refresh Token
 			List<Claim> claims = new List<Claim>

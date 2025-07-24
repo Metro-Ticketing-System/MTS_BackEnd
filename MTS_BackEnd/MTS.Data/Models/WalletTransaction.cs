@@ -12,7 +12,7 @@ namespace MTS.Data.Models
 		public TransactionType Type { get; set; }
 		public TransactionStatus Status { get; set; }
 		public string? Description { get; set; }
-		public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+		public DateTime CreatedAt { get; set; } = DateTime.Now;
 
 		[ForeignKey("WalletId")]
 		public virtual Wallet Wallet { get; set; } = null!;

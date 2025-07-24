@@ -62,7 +62,7 @@ namespace MTS.BLL.Services
                     RoleId = 2,
                     IsActive = true,
                     EmailConfirmed = true,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.Now
                 };
 
                 await _userRepo.AddAsync(newAccount);
@@ -111,10 +111,10 @@ namespace MTS.BLL.Services
                 account.IsActive = result;
                 if (result == false)
                 {
-                    account.DeletedAt = DateTime.UtcNow;
+                    account.DeletedAt = DateTime.Now;
 				}
                 account.DeletedAt = null; // Reset DeletedAt if activating the account
-                account.UpdatedAt = DateTime.UtcNow;
+                account.UpdatedAt = DateTime.Now;
                 await _userRepo.UpdateAsync(account);
                 var finalResult = await _unitOfWork.SaveAsync();
                 if (finalResult > 0)
@@ -134,7 +134,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var user = await _userRepo.GetByPropertyAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiry > DateTime.UtcNow && u.IsActive);
+                var user = await _userRepo.GetByPropertyAsync(u => u.RefreshToken == refreshToken && u.RefreshTokenExpiry > DateTime.Now && u.IsActive);
                 if (user == null) return null;
                 
                 // Generate new tokens
@@ -209,11 +209,11 @@ namespace MTS.BLL.Services
                     NormalizedEmail = registerRequest.Email.ToUpperInvariant(),
                     PasswordHash = passwordHash,
                     RoleId = 3,
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = DateTime.Now,
                     IsActive = true,
                     EmailConfirmed = true,
                     //EmailVerificationToken = verificationToken,
-                    //EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5),
+                    //EmailVerificationTokenExpiry = DateTime.Now.AddMinutes(5),
                 };
 
                 await _userRepo.AddAsync(user);
@@ -246,7 +246,7 @@ namespace MTS.BLL.Services
                 if (user == null) return new PasswordResetRequestResultDto { IsSucceed = false };
 
                 user.PasswordResetToken = Guid.NewGuid().ToString();
-                user.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(5);
+                user.PasswordResetTokenExpiry = DateTime.Now.AddMinutes(5);
                 await _userRepo.UpdateAsync(user);
                 var result = await _unitOfWork.SaveAsync();
                 if (result > 0) return new PasswordResetRequestResultDto
@@ -268,7 +268,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var user = await _userRepo.GetByPropertyAsync(u => u.PasswordResetToken == token && u.PasswordResetTokenExpiry > DateTime.UtcNow);
+                var user = await _userRepo.GetByPropertyAsync(u => u.PasswordResetToken == token && u.PasswordResetTokenExpiry > DateTime.Now);
                 if (user == null) return false;
 
                 user.PasswordHash = _passwordHasher.HashPassword(user, newPassword);
@@ -298,7 +298,7 @@ namespace MTS.BLL.Services
                 user.FirstName = userProfileDto.FirstName;
                 user.LastName = userProfileDto.LastName;
                 user.DateOfBirth = userProfileDto.DateOfBirth;
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = DateTime.Now;
                 await _userRepo.UpdateAsync(user);
                 var result = await _unitOfWork.SaveAsync();
                 if (result > 0)
@@ -318,7 +318,7 @@ namespace MTS.BLL.Services
         {
             try
             {
-                var user = await _userRepo.GetByPropertyAsync(u => u.Email == email && u.EmailVerificationToken == token && u.EmailVerificationTokenExpiry > DateTime.UtcNow);
+                var user = await _userRepo.GetByPropertyAsync(u => u.Email == email && u.EmailVerificationToken == token && u.EmailVerificationTokenExpiry > DateTime.Now);
                 if (user == null) return false;
                 user.EmailConfirmed = true;
                 user.EmailVerificationToken = null;
@@ -388,7 +388,7 @@ namespace MTS.BLL.Services
 
                 var verificationToken = Guid.NewGuid().ToString();
                 user.EmailVerificationToken = verificationToken;
-                user.EmailVerificationTokenExpiry = DateTime.UtcNow.AddMinutes(5);
+                user.EmailVerificationTokenExpiry = DateTime.Now.AddMinutes(5);
 
                 await _userRepo.UpdateAsync(user);
                 var succeedCount = await _unitOfWork.SaveAsync();

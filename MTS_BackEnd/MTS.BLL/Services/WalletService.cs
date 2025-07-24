@@ -39,7 +39,7 @@ namespace MTS.BLL.Services
 			{
 				UserId = userId,
 				Balance = 0,
-				CreatedAt = DateTime.UtcNow,
+				CreatedAt = DateTime.Now,
 			};
 
 			await _unitOfWork.GetRepository<Wallet>().AddAsync(newWallet);
@@ -107,13 +107,13 @@ namespace MTS.BLL.Services
 			//	{
 			//		UserId = userId,
 			//		Balance = 0,
-			//		CreatedAt = DateTime.UtcNow,
+			//		CreatedAt = DateTime.Now,
 			//	};
 			//	await _unitOfWork.GetRepository<Wallet>().AddAsync(wallet);
 			//}
 
 			wallet.Balance += amount;
-			wallet.UpdatedAt = DateTime.UtcNow;
+			wallet.UpdatedAt = DateTime.Now;
 
 			//if(!isNew)
 			//{
@@ -139,14 +139,14 @@ namespace MTS.BLL.Services
 			}
 
 			wallet.Balance -= ticket.TotalAmount;
-			wallet.UpdatedAt = DateTime.UtcNow;
+			wallet.UpdatedAt = DateTime.Now;
 			await _unitOfWork.GetRepository<Wallet>().UpdateAsync(wallet);
 
 			await CreateTransactionAsync(wallet.UserId, -ticket.TotalAmount, TransactionType.Purchase, TransactionStatus.Succeed, $"Ticket Purchase ID: {ticket.Id}");
 
 			ticket.isPaid = true;
 			ticket.Status = TicketStatus.UnUsed;
-			ticket.PurchaseTime = DateTime.UtcNow;
+			ticket.PurchaseTime = DateTime.Now;
 			ticket.QRCode = _qrTokenGenerator.GenerateQRToken(ticket.Id, ticket.PassengerId);
 			await _unitOfWork.GetRepository<Ticket>().UpdateAsync(ticket);
 
@@ -162,7 +162,7 @@ namespace MTS.BLL.Services
 				Type = type,
 				Status = status,
 				Description = description,
-				CreatedAt = DateTime.UtcNow
+				CreatedAt = DateTime.Now
 			};
 			await _unitOfWork.GetRepository<WalletTransaction>().AddAsync(transaction);
 		}
